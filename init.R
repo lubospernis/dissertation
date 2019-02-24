@@ -13,4 +13,19 @@ library(readstata13)
 imm <- read.dta13('data/imm.bjpols.dta')
 
 str(imm)
+
+aggregate(imm[, c("age", "gender")], list(
+  Region = imm$country
+), mean)
+##################################################
+
+##################################################
+## Section: mexico
+all <- read.table("data/ALL_Mexico.tab", header = T)
+colnames(all)
+##################################################
+
+##################################################
+## Section: china
+china <- read.dta13('data/china/data.dta')
 ##################################################

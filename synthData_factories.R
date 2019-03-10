@@ -2,6 +2,9 @@
 if (!require("R6")) install.packages("R6")
 library(R6)
 
+if (!require("httr")) install.packages("httr")
+library(httr)
+
 treatment_factory <- R6Class(
   "Treatment", 
   private = list(
@@ -11,6 +14,11 @@ treatment_factory <- R6Class(
       e
     }), 
   active = list(
+    #' Create an average treatment effect.
+    #' 
+    #' @param value The value of the ATE.
+    #' @examples
+    #' $effect <- 4
     effect = function(value) {
       if(missing(value)){
         private$shared$effect
@@ -99,15 +107,21 @@ unit_factory <- R6Class(
     assignTreatment = function(seed = NULL){
       if (!is.null(seed)) set.seed(seed)
       set.seed(seed)
-      treatSample <- sample(1:private$..sampleS, private$..sampleS * 0.5)
       df <- data.frame(
         age = private$..sampleD, 
         y0 = private$..y0, 
         y1 = private$..y1
       )
-      df$y
-      df[treatSample, "y"] <- 1
-      df[-treatSample, "y"] <- 0
+      
+      df$random <- sample(1:private$..sampleS)
+      
+      df <- df[order(df$random), ]
+      df$t <- c(rep(1, 0.5 * nrow(df)), rep(0, nrow(df) - 0.5 * nrow(df)))
+      
+      df$y <- ifelse(df$t == 1, df$y1, df$y0)
+      
+      df$random <- NULL
+      
       private$..df <- df
     }
   ),
@@ -123,7 +137,10 @@ unit_factory <- R6Class(
     }, 
     ate_true = function() {
       mean(private$..y1) - mean(private$..y0)
-    }, 
+    },
+    ate = function() {
+      mean(private$..df$y[private$..df$t == 1]) - mean(private$..df$y[private$..df$t == 0]) 
+    },
     df = function() {
       private$..df
     }

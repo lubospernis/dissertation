@@ -10,7 +10,9 @@ treatment_factory <- R6Class(
   private = list(
     shared = {
       e <- new.env()
-      e$effect <- NULL
+      e$effectConstant <- NULL
+      e$effectLinear <- NULL
+      e$which <- NULL
       e
     }), 
   active = list(
@@ -19,11 +21,20 @@ treatment_factory <- R6Class(
     #' @param value The value of the ATE.
     #' @examples
     #' $effect <- 4
-    effect = function(value) {
+    effectConstant = function(value) {
       if(missing(value)){
-        private$shared$effect
+        private$shared$effectConstant
       } else {
-        private$shared$effect <- value
+        private$shared$effectConstant <- value
+        private$shared$which <- 'effectConstant'
+      }
+    }, 
+    effectLinear = function(value) {
+      if(missing(value)){
+        private$shared$effectLinear
+      } else {
+        private$shared$effectLinear <- value
+        private$shared$which <- 'effectLinear'
       }
     }
   )
@@ -76,6 +87,7 @@ location_factory <- R6Class(
         sampleD <- sample(vectorD, n) %>% as.numeric()
         # Save Sample Distrib
         private$..sampleD <- sampleD
+        private$..df <- sampleD
         # Save 
         sample <- data.frame(table(sampleD))
         colnames(sample) <- c('Age', 'Freq')
@@ -99,11 +111,25 @@ location_factory <- R6Class(
         abs(rnorm(n = as.numeric(x['Freq']), mean = as.numeric(x['Age']), sd = 0))
       })
       private$..y0 <- unlist(distrib)
+      private$..df <- data.frame(age = private$..sampleD, y0 = private$..y0)
     }, 
     createY1 = function(seed = NULL) {
       if (!is.null(seed)) set.seed(seed)
-      private$..y1 <- private$..y0 + 
-        rnorm(n = private$..sampleS, mean = private$shared$effect, sd = 0)
+      
+      if (private$shared$which == "effectConstant") {
+        private$..y1 <- private$..y0 + 
+          rnorm(n = private$..sampleS, mean = private$shared$effectConstant, sd = 0)
+      } else if (private$shared$which == 'effectLinear') {
+        # First parse
+        for (i in colnames(private$..df)) {
+          pattern <- paste0('-', i, '-')
+          private$shared$effectLinear <- gsub(pattern, paste0("private$..df[, '", i, "']"), private$shared$effectLinear)
+        }
+        private$..y1 <- eval(parse(text = private$shared$effectLinear))
+        
+      }
+      
+      
     },
     assignTreatment = function(seed = NULL){
       if (!is.null(seed)) set.seed(seed)

@@ -29,8 +29,8 @@ treatment_factory <- R6Class(
   )
 )
 
-unit_factory <- R6Class(
-  "Unit", 
+location_factory <- R6Class(
+  "Location", 
   inherit = treatment_factory,
   private = list(
     ..pop = NULL,
@@ -87,22 +87,23 @@ unit_factory <- R6Class(
     },
     show_sample_distribution = function() {
       if (length(private$..sampleD) != 0) {
-        plot(density(private$..sampleD), 
+        hist(private$..sampleD, 
              main = private$..countryName, 
-             sub = "Age distribution")
+             sub = "Age distribution", 
+             xlab = "Age")
       }
     }, 
     createY0 = function(seed = NULL) {
       if (!is.null(seed)) set.seed(seed)
       distrib <- apply(private$..sample, 1, function(x) {
-        abs(rnorm(n = as.numeric(x['Freq']), mean = as.numeric(x['Age']), sd = 1))
+        abs(rnorm(n = as.numeric(x['Freq']), mean = as.numeric(x['Age']), sd = 0))
       })
       private$..y0 <- unlist(distrib)
     }, 
     createY1 = function(seed = NULL) {
       if (!is.null(seed)) set.seed(seed)
       private$..y1 <- private$..y0 + 
-        rnorm(n = private$..sampleS, mean = private$shared$effect, sd = 1)
+        rnorm(n = private$..sampleS, mean = private$shared$effect, sd = 0)
     },
     assignTreatment = function(seed = NULL){
       if (!is.null(seed)) set.seed(seed)
@@ -143,6 +144,12 @@ unit_factory <- R6Class(
     },
     df = function() {
       private$..df
+    },
+    dfObserved = function() {
+      private$..df[,-which(names(private$..df) %in% c("y0","y1"))]
+    },
+    sample = function() {
+      private$..sampleD
     }
   )
 ) 

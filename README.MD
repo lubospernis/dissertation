@@ -1,3 +1,3 @@
 # Generalising experimental results using treatment heterogeneity - Dissertation project
 
-[images/flowchart_sim_process.png]
+![Simulation process](images/flowchart_sim_process.png)[]

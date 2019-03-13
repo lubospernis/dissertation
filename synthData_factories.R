@@ -5,6 +5,9 @@ library(R6)
 if (!require("httr")) install.packages("httr")
 library(httr)
 
+if(!require('magrittr')) install.packages("magrittr")
+library(magrittr)
+
 treatment_factory <- R6Class(
   "Treatment", 
   private = list(

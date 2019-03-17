@@ -98,7 +98,26 @@ location_factory <- R6Class(
         
         # Save sample size 
         private$..sampleS <- n
+        
+        # Save to df
+        private$..df <- data.frame(age = private$..sampleD)
       }
+    },
+    create_covariate = function(name) {
+      # How should this work?
+      # Either say random that is the simplest case or in a certain relationship
+      # Based on real data
+      # For example the way education could work that it would intelligently distribute
+      # The values
+      library(dplyr)
+      
+      SampleSize <- length(private$..sampleD)
+      
+      feature <- rnorm(SampleSize)
+      
+      private$..df[, name] <- feature 
+      
+      return('Sucess...')
     },
     show_sample_distribution = function() {
       if (length(private$..sampleD) != 0) {

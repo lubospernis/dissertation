@@ -7,8 +7,7 @@ treatment1$effectConstant <- 10 # Define constant treatment effect of 10
 
 # Unit 0
 SK <- location_factory$new()
-SK$create_pop('Slovak Republic', 2000) # Draw the age distribution from year 2000
-SK$create_sample(1000, 123) # Draw a random sample and set seed
+SK$create_sample(500, -3, 'Slovakia', 123) # Draw a random sample and set seed
 SK$show_sample_distribution() # Show the distribution
 SK$createY0(123) # Create potential outcomes under control
 SK$createY1(123) # Create potential otucomes under treatment
@@ -19,8 +18,7 @@ SK$ate # Show the experimental ate
 
 # Unit 1
 CZ <- location_factory$new()
-CZ$create_pop('Czech Republic', 2000)
-CZ$create_sample(1000)
+CZ$create_sample(500, -2, "Czech Republic", 123)
 CZ$show_sample_distribution()
 CZ$createY0(123)
 CZ$createY1(123)
@@ -42,5 +40,15 @@ for (i in 1:1000) {
 
 plot(density(ateSave))
 
+# Is there balance on covariates?
+balance <- numeric()
+for (i in 1:1000) {
+  CZ$assignTreatment()
+  t <- mean(CZ$dfObserved$x1[CZ$dfObserved$t == 1]) - mean(CZ$dfObserved$x1[CZ$dfObserved$t == 0])
+  
+  balance[i] <- t
+}
+
+plot(density(balance))
 
 

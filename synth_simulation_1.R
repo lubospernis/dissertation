@@ -167,7 +167,8 @@ replicateForests <- function(initial, target, formula) {
 }
 
 forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
+png('images/simulation_1_error_forest.png')
 hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
-
+dev.off()
                       

@@ -80,7 +80,7 @@ causalMatch <- function(target, initial, X, seed = NULL) {
   
   attr(listtoReturn, 'prediction.error') <- (prediction - target$ate)^2
   attr(listtoReturn, 'targetinitial.error') <- (initial$ate - target$ate)^2
-  
+  print('Done. Success. Matched.')
   return(listtoReturn) 
 }
 

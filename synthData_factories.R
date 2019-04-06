@@ -59,7 +59,7 @@ location_factory <- R6Class(
     create_sample = function(n, mean, name, seed = NULL) {
       set.seed(seed)
       basic <- runif(min = 0, max = 10, n = 0.8 * n)
-      add <- rnorm(n = 0.2 * n, mean)
+      add <- rnorm(n = 0.2 * n, mean, sd = 0.1)
       add <- add[add <= 10 | add >= 0]
       
       # save as sample
@@ -71,21 +71,19 @@ location_factory <- R6Class(
       private$..countryName <- name
     
     },
-    create_covariate = function(name) {
+    create_covariate = function(name, random = TRUE, seed = NULL) {
       # How should this work?
       # Either say random that is the simplest case or in a certain relationship
       # Based on real data
       # For example the way education could work that it would intelligently distribute
       # The values
-      library(dplyr)
+      if (random != TRUE) return('Currently, you can only create a random covariate')
+      set.seed(seed)
+      randCov <- rnorm(nrow(private$..df), mean = 5)
       
-      SampleSize <- length(private$..sampleD)
+      private$..df[, name] <- randCov
+      print('Success...')
       
-      feature <- rnorm(SampleSize)
-      
-      private$..df[, name] <- feature 
-      
-      return('Success...')
     },
     show_sample_distribution = function() {
       if (length(private$..df$x1) != 0) {

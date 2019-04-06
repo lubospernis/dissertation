@@ -1,6 +1,6 @@
 # Load libraries
 library(magrittr)
-
+library(FNN)
 #### START ####
 
 ## Define treatment - it will take linear form
@@ -90,7 +90,7 @@ for(i in 1:1000){
   # For each re-assign treatment
   d0_reassigned <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
-  match_out <- replicate(1000, causalMatchFNN(d1, d0, 'x1'))
+  match_out <- replicate(100, causalMatchFNN(d1, d0, 'x1'))
   match_out_matrix <- matrix(unlist(match_out), ncol = 3)
   pred_errors <- (match_out_matrix[, 3] - unlist(match_out_matrix[, 2]))^2
   mse <- mean(pred_errors)
@@ -102,4 +102,7 @@ for(i in 1:1000){
   
 }
 
+png('images/simulation_1_error.png')
 hist(MSEs)
+dev.off()
+

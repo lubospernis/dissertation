@@ -10,7 +10,7 @@ generate_y1 <- function(treatment_function) {
   return(y0 + eval(parse(text  = treatment_function)))
 }
 
-treatment_function <- '2 + x1'
+treatment_function <- '2 + 10 * x1'
 
 ## Create the synth dataset for D = 0 
 # Create covariate x1 
@@ -72,6 +72,16 @@ cor(d0[, c('t', 'x1', 'y0', 'y1')])
 # Ass3: Overlap
 # -> by definition
 
+## Compute ATEs
+
+# ATE d0
+mean(d0$y1) - mean(d0$y0)
+mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+
+# ATE d1
+mean(d1$y1) - mean(d1$y0)
+
+
 ##### Apply the methods #####
 source('causalMatchFNN.R')
 
@@ -92,9 +102,8 @@ for(i in 1:1000){
   # Compute the mean squared error of the predictions for Causal Match with reassignment
   match_out <- replicate(1000, causalMatchFNN(d1, d0, 'x1'))
   match_out_matrix <- matrix(unlist(match_out), ncol = 3)
-  pred_errors <- (match_out_matrix[, 3] - unlist(match_out_matrix[, 2]))^2
+  pred_errors <- (match_out_matrix[, 3] - match_out_matrix[, 2])^2
   mse <- mean(pred_errors)
-  mse <- mean((match_out_matrix[, 3] - unlist(match_out_matrix[, 2])) ^2)
   # Assign the mse to MSEs vector
   MSEs[i] <- mse
   #

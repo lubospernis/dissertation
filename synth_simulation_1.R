@@ -1,6 +1,6 @@
 # Load libraries
 library(magrittr)
-
+library(devtools)
 #### START ####
 
 ## Define treatment - it will take linear form

@@ -107,7 +107,7 @@ mean(d1$y1) - mean(d1$y0)
 
 
 ##### Apply the methods #####
-source('causalMatchFNN.R')
+source('causalMatchFNNdf.R')
 
 MSEs_initial <- numeric()
 MSEs <- numeric()

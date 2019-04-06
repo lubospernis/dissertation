@@ -16,7 +16,6 @@ causalMatchFNNdf <- function(target, initial, X, seed = NULL) {
   initial_t <- initial[initial$t == 1, X, drop = F]
   # first for loop
   indices_t <- knnx.index(initial_t, target_t, k =1)
-  print(length(indices_t))
   matched_y_t <- initialwithY_t[indices_t, ]
 
   
@@ -28,8 +27,7 @@ causalMatchFNNdf <- function(target, initial, X, seed = NULL) {
   
   # second for loop
   indices_c <- knnx.index(initial_c, target_c, k =1)
-  print(length(indices_c))
-  
+
   matched_y_c <- initialwithY_c[indices_c, ]
  
   MatchedDF <- rbind(matched_y_t, matched_y_c) 

@@ -17,9 +17,10 @@ reassign_treatment <- function(dataset) {
   dataset$t <- NA
   dataset$t[treat_rows] <- 1
   dataset$t[-treat_rows] <- 0
+  dataset$y <- ifelse(dataset$t == 1, dataset$y1, dataset$y0)
   return(dataset)
+  
 }
-
 
 treatment_function <- '2 + 10 * x1'
 
@@ -108,21 +109,28 @@ mean(d1$y1) - mean(d1$y0)
 ##### Apply the methods #####
 source('causalMatchFNN.R')
 
-
+MSEs_initial <- numeric()
 MSEs <- numeric()
-for(i in 1:1000){
+for(i in 1:100){
   # For each re-assign treatment
   d0_reassigned <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
   mse <- numeric()
+  mse_initial_target <- numeric()
   for (j in 1:100){
-    match_out <- causalMatchFNN(d1, d0, 'x1')
+    match_out <- causalMatchFNN(d1, d0_reassigned, 'x1')
     mse[j] <- (match_out$predicted_ate - match_out$target_ate)^2
+    mse_initial_target[j] <- (match_out$target_ate - match_out$initial_ate)^2
   }
   # Assign the mse to MSEs vector
   MSEs[i] <- mean(mse)
+  MSEs_initial[i] <- mean(mse_initial_target)
+  
   #
   print(paste0('Iteration: ', i))
+  print(is.na(var(mse_initial_target)))
+  print(paste0('MSE: ', mean(mse)))
+  print(paste0('True: ', mean(mse_initial_target)))
   
 }
 
@@ -130,6 +138,36 @@ png('images/simulation_1_error.png')
 hist(MSEs)
 dev.off()
 
+## Causal Forest
+replicateForests <- function(initial, target, formula) {
+  initial <- reassign_treatment(initial)
+  
+  cf <- causalForest(formula, data=initial, treatment=initial$t, 
+                     split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
+                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                     split.alpha = 0.5, cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(initial) / 2), sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(initial)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1) 
+  
+  predictioncf <- predict(cf, target)
+  
+  # Ate true
+  targetATE <- mean(target$y1) - mean(target$y0)
+  
+  #
+  InTa <- mean(initial$y[initial$t==1]) - mean(initial$y[initial$t==0])
+  
+  # pred error
+  predE <- (mean(predictioncf) - targetATE) ^2
+  # trueE 
+  trueE <- (InTa - targetATE)^2
+  
+  return(c(predE, trueE))
+  
+}
 
+forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
+hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
+hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
 
                       

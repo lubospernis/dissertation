@@ -1,4 +1,4 @@
-causalMatchFNN <- function(target, initial, X, seed = NULL) {
+causalMatchFNNdf <- function(target, initial, X, seed = NULL) {
   library(FNN)
   
   # Assign treatment to target - if seed is not null, standardize
@@ -17,10 +17,8 @@ causalMatchFNN <- function(target, initial, X, seed = NULL) {
   # first for loop
   indices_t <- knnx.index(initial_t, target_t, k =1)
   print(length(indices_t))
-  matched_y_t <- initialwithY_t[indices_t, 'y']
-  
-  matched_y_t_mean <- mean(matched_y_t)
-  
+  matched_y_t <- initialwithY_t[indices_t, ]
+
   
   # Select only the individuals according to the Tr indicator from Control
   target_c <- target[target$t == 0, X, drop = F]
@@ -32,25 +30,11 @@ causalMatchFNN <- function(target, initial, X, seed = NULL) {
   indices_c <- knnx.index(initial_c, target_c, k =1)
   print(length(indices_c))
   
-  matched_y_c <- initialwithY_c[indices_c, 'y']
-  
-  matched_y_c_mean <- mean(matched_y_c)
-  
-  prediction <- matched_y_t_mean - matched_y_c_mean
-  
-  # print(
-  #   t.test(
-  #     matched_y_t, matched_y_c
-  #   )
-  # )
-  
-  
-  listtoReturn <- list(
-    initial_ate = mean(initial$y[initial$t == 1]) - mean(initial$y[initial$t == 0]),
-    target_ate = mean(target$y1) - mean(target$y0),
-    predicted_ate = prediction
-  )
+  matched_y_c <- initialwithY_c[indices_c, ]
+ 
+  MatchedDF <- rbind(matched_y_t, matched_y_c) 
+ 
   #print('Done. Success. Matched.')
-  return(listtoReturn) 
+  return(MatchedDF) 
 }
 

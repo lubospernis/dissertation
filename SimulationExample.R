@@ -26,7 +26,7 @@ S1$ate
 
 
 # Knn
-match <- causalMatch(S1, S0, 'x1')
+#match <- causalMatch(S1, S0, 'x1')
 
 # Causal Forest
 cf <- causalForest(y ~ x1, data=S0$dfObserved, treatment=S0$dfObserved$t, 
@@ -63,23 +63,23 @@ replicateForests <- function(initial, target, formula) {
 }
 
 forestError <- replicate(100, replicateForests(S0, S1, y ~ x1))
-hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
+hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 220))
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
 
-### Match
-replicateMatch <- function(initial, target, covariate){
-  initial$assignTreatment()
-  match <- causalMatchFNN(target, initial, covariate)
-  pred_error <- attr(match, 'prediction.error')
-  true_error <- attr(match, 'targetinitial.error')
-  return(c(pred_error, true_error))
-}
-
-matchError <- replicate(100, replicateMatch(S0, S1, 'x1'))
-hist(t(matchError)[, 1], breaks = 20, main = 'causal Match', xlab = 'Pred. Error', xlim = c(0, 200))
-hist(t(matchError)[, 2], breaks = 20, col = 'red', add = T)
-
-# Compare forest and Match
-mean(t(forestError)[, 1])
-
-mean(t(matchError)[, 1])
+# ### Match
+# replicateMatch <- function(initial, target, covariate){
+#   initial$assignTreatment()
+#   match <- causalMatchFNN(target, initial, covariate)
+#   pred_error <- attr(match, 'prediction.error')
+#   true_error <- attr(match, 'targetinitial.error')
+#   return(c(pred_error, true_error))
+# }
+# 
+# matchError <- replicate(100, replicateMatch(S0$dfTarget, S1$dfObserved, 'x1'))
+# hist(t(matchError)[, 1], breaks = 20, main = 'causal Match', xlab = 'Pred. Error', xlim = c(0, 200))
+# hist(t(matchError)[, 2], breaks = 20, col = 'red', add = T)
+# 
+# # Compare forest and Match
+# mean(t(forestError)[, 1])
+# 
+# mean(t(matchError)[, 1])

@@ -20,8 +20,7 @@ causalMatchFNN <- function(target, initial, X, seed = NULL) {
   matched_y_t <- initialwithY_t[indices_t, 'y']
   
   matched_y_t_mean <- mean(matched_y_t)
-  
-  
+
   # Select only the individuals according to the Tr indicator from Control
   target_c <- target[target$t == 0, X, drop = F]
   # Select only covariates from the initial location
@@ -47,7 +46,11 @@ causalMatchFNN <- function(target, initial, X, seed = NULL) {
   listtoReturn <- list(
     initial_ate = mean(initial$y[initial$t == 1]) - mean(initial$y[initial$t == 0]),
     target_ate = mean(target$y1) - mean(target$y0),
-    predicted_ate = prediction
+    predicted_ate = prediction,
+    balance_d0 = mean(initial[, X]), 
+    balance_d1_c= mean(initial[indices_c, X]),
+    balance_d1_t = mean(initial[indices_t, X]),
+    balance_d1 = mean(target[, X])
   )
   #print('Done. Success. Matched.')
   return(listtoReturn) 

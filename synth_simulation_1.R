@@ -114,18 +114,11 @@ for(i in 1:1000){
   # For each re-assign treatment
   d0_reassigned <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
-<<<<<<< HEAD
-  match_out <- replicate(100, causalMatchFNN(d1, d0, 'x1'))
-  match_out_matrix <- matrix(unlist(match_out), ncol = 3)
-  pred_errors <- (match_out_matrix[, 3] - match_out_matrix[, 2])^2
-  mse <- mean(pred_errors)
-=======
   mse <- numeric()
-  for (j in 1:100){
+  for (j in 1:1000){
     match_out <- causalMatchFNN(d1, d0, 'x1')
     mse[j] <- (match_out$predicted_ate - match_out$target_ate)^2
   }
->>>>>>> 0fca5e599493021da7515b45954e9bb177ac8c33
   # Assign the mse to MSEs vector
   MSEs[i] <- mean(mse)
   #
@@ -133,13 +126,10 @@ for(i in 1:1000){
   
 }
 
-png('images/simulation_1_error.png')
+png('images/simulation_1_error-new.png')
 hist(MSEs)
 dev.off()
 
-<<<<<<< HEAD
-=======
+# 
 
-
-                      
->>>>>>> 0fca5e599493021da7515b45954e9bb177ac8c33
+m <- causalMatchFNN(d1, d0, 'x1')

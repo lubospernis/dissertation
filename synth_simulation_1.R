@@ -1,5 +1,6 @@
 # Load libraries
 library(magrittr)
+library(causalTree)
 library(devtools)
 #### START ####
 
@@ -119,10 +120,10 @@ for(i in 1:100){
   mse_initial_target <- numeric()
   for (j in 1:100){
     m<- causalMatchFNNdf(d1, d0_reassigned, 'x1')
-    match_out_ate <- m$y[m$t==1] - m$y[m$t==0]
+    match_out_ate <- mean(m$y[m$t==1]) - mean(m$y[m$t==0])
     
-    true_ate <- mean(target$y1)-mean(target$y0)
-    initial_ate <- mean(initial$y[initial$t == 1]) - mean(initial$y[initial$t == 0])
+    true_ate <- mean(d1$y1)-mean(d1$y0)
+    initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
     mse[j] <- (match_out_ate - true_ate)^2
     mse_initial_target[j] <- (true_ate - initial_ate)^2
   }
@@ -135,7 +136,7 @@ for(i in 1:100){
   
 }
 
-png('images/simulation_1_error.png')
+png('images/simulation_1_error_matching.png')
 hist(MSEs)
 dev.off()
 
@@ -172,4 +173,6 @@ png('images/simulation_1_error_forest.png')
 hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
 dev.off()
+
+mean(forestError)
                       

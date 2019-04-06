@@ -107,7 +107,7 @@ mean(d1$y1) - mean(d1$y0)
 
 
 ##### Apply the methods #####
-source('causalMatchFNN.R')
+source('causalMatchFNNdf.R')
 
 MSEs_initial <- numeric()
 MSEs <- numeric()
@@ -118,9 +118,13 @@ for(i in 1:100){
   mse <- numeric()
   mse_initial_target <- numeric()
   for (j in 1:100){
-    match_out <- causalMatchFNN(d1, d0_reassigned, 'x1')
-    mse[j] <- (match_out$predicted_ate - match_out$target_ate)^2
-    mse_initial_target[j] <- (match_out$target_ate - match_out$initial_ate)^2
+    m<- causalMatchFNNdf(d1, d0_reassigned, 'x1')
+    match_out_ate <- m$y[m$t==1] - m$y[m$t==0]
+    
+    true_ate <- mean(target$y1)-mean(target$y0)
+    initial_ate <- mean(initial$y[initial$t == 1]) - mean(initial$y[initial$t == 0])
+    mse[j] <- (match_out_ate - true_ate)^2
+    mse_initial_target[j] <- (true_ate - initial_ate)^2
   }
   # Assign the mse to MSEs vector
   MSEs[i] <- mean(mse)
@@ -128,9 +132,6 @@ for(i in 1:100){
   
   #
   print(paste0('Iteration: ', i))
-  print(is.na(var(mse_initial_target)))
-  print(paste0('MSE: ', mean(mse)))
-  print(paste0('True: ', mean(mse_initial_target)))
   
 }
 

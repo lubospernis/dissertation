@@ -1,6 +1,7 @@
 # The aim of this simulation is to show that knn breaks down as the num of covariates increases
 # p = 6, p = 20
 source('functions/causalMatchFNN.R')
+library(causalTree)
 
 ### First create data 
 # This helper function generates y1
@@ -72,65 +73,225 @@ add_rand <- function(df, name, seed = NULL){
 # Situation 1; p = 6
 covariates <- paste0('x', 2:6)
 true_ate <- mean(d1$y1) - mean(d1$y0)
-MSE <- numeric()
-
-MSE <- (causalMatchFNN(d1, d0, 'x1') - true_ate) ^ 2
+initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+# Create an empty vector to capture MSE from Matching
+MSE_matching <- numeric()
+# Create an empty vector to capture MSE from Forests
+MSE_forest <- numeric()
+# Matching
+MSE_matching <- (causalMatchFNN(d1, d0, 'x1') - true_ate) ^ 2
+# Forest
+cf <- causalForest(y~x1 , data=d0, treatment=d0$t, 
+                   split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
+                   bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                   split.alpha = 0.5, cv.alpha = 0.5,
+                   sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
+                   mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1)
+MSE_forest <- (mean(predict(cf, d1)) - true_ate) ^ 2
 
 for (i in covariates) {
   # New random covariates
   d1 <- add_rand(d1, i)
   d0 <- add_rand(d0, i)
+  # Matching
+  prediction_matching <- causalMatchFNN(d1, d0, grep('x', colnames(d1), value = T))
+  local_matching_mse <- (prediction_matching - true_ate)^2
+  MSE_matching <- c(MSE_matching, local_matching_mse)
   
-  prediction <- causalMatchFNN(d1, d0, grep('x', colnames(d1), value = T))
-  local_mse <- (prediction - true_ate)^2
-  MSE <- c(MSE, local_mse)
+  # Forest
+  formula <- paste0(grep('x', colnames(d0), value = T), collapse= '+')
+  formula <- paste0('y~',formula)
+  formula <- as.formula(formula)
+  
+  cf <- causalForest(formula,
+                     data=d0,
+                     treatment=d0$t, 
+                     split.Rule="CT",
+                     split.Honest=T,
+                     split.Bucket=F,
+                     bucketNum = 5,
+                     bucketMax = 100,
+                     cv.option="CT",
+                     cv.Honest=T,
+                     minsize = 2L, 
+                     split.alpha = 0.5,
+                     cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(d0) / 2),
+                     sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(d0)/3),
+                     nodesize = 3,
+                     num.trees= 5,
+                     ncolx=length(grep('x', colnames(d0))),
+                     ncov_sample= ceiling(length(grep('x', colnames(d0))) / 3)
+                     )
+  
+  MSE_forest <- c(MSE_forest, (mean(predict(cf, d1)) - true_ate) ^ 2)
   
   print(paste0('Adding covariate: ', i))
 }
 
-plot(MSE, type = 'o')
+png('images/simulation_2_p6.png')
+plot(MSE_matching, type = 'o', ylim = c(0, 220))
+lines(MSE_forest, col ='blue', type = 'o')
+abline(h = (initial_ate - true_ate) ^ 2)
+dev.off()
 
 # Clean
 d0 <- d0[, 1:5]
 d1 <- d1[, 1:3]
 
 # Situation 2; p = 20
-# Situation 1; p = 6
 covariates <- paste0('x', 2:20)
 true_ate <- mean(d1$y1) - mean(d1$y0)
-MSE <- numeric()
-
-MSE <- (causalMatchFNN(d1, d0, 'x1') - true_ate) ^ 2
+initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+# Create an empty vector to capture MSE from Matching
+MSE_matching <- numeric()
+# Create an empty vector to capture MSE from Forests
+MSE_forest <- numeric()
+# Matching
+MSE_matching <- (causalMatchFNN(d1, d0, 'x1') - true_ate) ^ 2
+# Forest
+cf <- causalForest(y~x1 , data=d0, treatment=d0$t, 
+                   split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
+                   bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                   split.alpha = 0.5, cv.alpha = 0.5,
+                   sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
+                   mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1)
+MSE_forest <- (mean(predict(cf, d1)) - true_ate) ^ 2
 
 for (i in covariates) {
   # New random covariates
   d1 <- add_rand(d1, i)
   d0 <- add_rand(d0, i)
+  # Matching
+  prediction_matching <- causalMatchFNN(d1, d0, grep('x', colnames(d1), value = T))
+  local_matching_mse <- (prediction_matching - true_ate)^2
+  MSE_matching <- c(MSE_matching, local_matching_mse)
   
-  prediction <- causalMatchFNN(d1, d0, grep('x', colnames(d1), value = T))
-  local_mse <- (prediction - true_ate)^2
-  MSE <- c(MSE, local_mse)
+  # Forest
+  formula <- paste0(grep('x', colnames(d0), value = T), collapse= '+')
+  formula <- paste0('y~',formula)
+  formula <- as.formula(formula)
+  
+  cf <- causalForest(formula,
+                     data=d0,
+                     treatment=d0$t, 
+                     split.Rule="CT",
+                     split.Honest=T,
+                     split.Bucket=F,
+                     bucketNum = 5,
+                     bucketMax = 100,
+                     cv.option="CT",
+                     cv.Honest=T,
+                     minsize = 2L,
+                     split.alpha = 0.5,
+                     cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(d0) / 2),
+                     sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(d0)/3),
+                     nodesize = 3,
+                     num.trees= 5,
+                     ncolx=length(grep('x', colnames(d0))),
+                     ncov_sample= ceiling(length(grep('x', colnames(d0))) / 3)
+  )
+  
+  MSE_forest <- c(MSE_forest, (mean(predict(cf, d1)) - true_ate) ^ 2)
   
   print(paste0('Adding covariate: ', i))
 }
 
-plot(MSE, type = 'o')
+png('images/simulation_2_p20.png')
+plot(MSE_matching, type = 'o', ylim = c(0, 400))
+lines(MSE_forest, col ='blue', type = 'o')
+abline(h = (initial_ate - true_ate) ^ 2)
+dev.off()
 
-library(causalTree)
 
-formula <- paste0(grep('x', colnames(d0), value = T), collapse= '+')
-formula <- paste0('y~',formula)
-formula <- as.formula(formula)
+# Define the loop as function to simulate the process
+loop_random_variables <- function() {
+  covariates <- paste0('x', 2:10)
+  true_ate <- mean(d1$y1) - mean(d1$y0)
+  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+  # Create an empty vector to capture MSE from Matching
+  MSE_matching <- numeric()
+  # Create an empty vector to capture MSE from Forests
+  MSE_forest <- numeric()
+  # Matching
+  MSE_matching <- (causalMatchFNN(d1, d0, 'x1') - true_ate) ^ 2
+  # Forest
+  cf <- causalForest(y~x1 , data=d0, treatment=d0$t, 
+                     split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
+                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                     split.alpha = 0.5, cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1)
+  MSE_forest <- (mean(predict(cf, d1)) - true_ate) ^ 2
+  
+  for (i in covariates) {
+    # New random covariates
+    d1 <- add_rand(d1, i)
+    d0 <- add_rand(d0, i)
+    # Matching
+    prediction_matching <- causalMatchFNN(d1, d0, grep('x', colnames(d1), value = T))
+    local_matching_mse <- (prediction_matching - true_ate)^2
+    MSE_matching <- c(MSE_matching, local_matching_mse)
+    
+    # Forest
+    formula <- paste0(grep('x', colnames(d0), value = T), collapse= '+')
+    formula <- paste0('y~',formula)
+    formula <- as.formula(formula)
+    
+    cf <- causalForest(formula,
+                       data=d0,
+                       treatment=d0$t, 
+                       split.Rule="CT",
+                       split.Honest=T,
+                       split.Bucket=F,
+                       bucketNum = 5,
+                       bucketMax = 100,
+                       cv.option="CT",
+                       cv.Honest=T,
+                       minsize = 2L,
+                       split.alpha = 0.5,
+                       cv.alpha = 0.5,
+                       sample.size.total = floor(nrow(d0) / 2),
+                       sample.size.train.frac = .5,
+                       mtry = ceiling(ncol(d0)/3),
+                       nodesize = 3,
+                       num.trees= 5,
+                       ncolx=length(grep('x', colnames(d0))),
+                       ncov_sample= ceiling(length(grep('x', colnames(d0))) / 3)
+    )
+    
+    MSE_forest <- c(MSE_forest, (mean(predict(cf, d1)) - true_ate) ^ 2)
+    
+    print(paste0('Adding covariate: ', i))
+  }
+  
+  return(list(matching = MSE_matching, forest =MSE_forest))
+}
 
-causacf <- causalForest(y~x1 +x2 , data=d0, treatment=d0$t, 
-                              split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
-                              bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
-                              split.alpha = 0.5, cv.alpha = 0.5,
-                              sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
-                              mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 5,ncolx=2,ncov_sample=2) 
 
-(mean(predict(causacf, d1)) - true_ate) ^ 2
-library(corrplot)
-cor(d0[, c(1, 6:24)])
+png('images/simulation_2_p20_repeated.png')
+plot(MSE_matching[1:10], type = 'o', ylim = c(0, 400))
+lines(MSE_forest[1:10], col ='blue', type = 'o')
+abline(h = (initial_ate - true_ate) ^ 2)
 
-corrplot(cor(d0[, c(1, 5:24)]))
+# Now add new lines
+for (i in 1:10) {
+  additional_lines <- loop_random_variables()
+  do.call("lines", list(
+    additional_lines$matching, 
+    col = 'grey', 
+    type = 'o'
+  ))
+  
+  do.call("lines", list(
+    additional_lines$forest, 
+    col = 'lightblue', 
+    type = 'o'
+  ))
+}
+
+dev.off()
+

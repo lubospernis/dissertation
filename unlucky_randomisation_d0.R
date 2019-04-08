@@ -1,7 +1,8 @@
-# Is causal match superior to standard matching procedure? 
+# creates unlucky randomisation
+
 source('functions/standardMatch.R')
 source('functions/causalMatchFNN.R')
-
+library(ggplot2)
 
 # This helper function generates y1
 generate_y1 <- function(treatment_function) {
@@ -58,7 +59,7 @@ rm(x1, y1, y0, uniform, treatment_function, normal, generate_y1)
 
 ### Assign treatment to D = 0
 
-set.seed(123)
+set.seed(100)
 random <- sample(1:nrow(d0))
 treat_rows <- random[1:floor(0.5*length(random))]
 d0$t <- NA
@@ -71,37 +72,40 @@ d0$y <- ifelse(d0$t == 1, d0$y1, d0$y0)
 # Clean the workspace
 rm(random, treat_rows)
 
-### Perform both Matchings
-MSE_causal <- numeric()
-MSE_standard <- numeric()
-for(i in 1:100){
-  # For each re-assign treatment
-  d0 <- reassign_treatment(d0)
-  # Define baseline cases
-  true_ate <- mean(d1$y1)-mean(d1$y0)
-  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
-  # Compute the mean squared error of the predictions for Standard Match with reassignment
-  ms<- Match(d1, d0, 'x1')
-  MSE_standard[i] <- (ms - true_ate)^2
-  
-  # Causal Match
-  mc <- causalMatchFNN(d1, d0, 'x1')
-  MSE_causal[i] <- (mc - true_ate)^2
+# Save as d0_lucky
+d0_lucky <- d0
 
-  #
-  print(paste0('Iteration: ', i))
-  
-}
+# This should be close to zero
+mean(d0_lucky$y1 - d0_lucky$y0) - (mean(d0_lucky$y[d0_lucky$t == 1]) - mean(d0_lucky$y[d0_lucky$t == 0]))
 
-library(ggplot2)
-errors <- data.frame(
-  MSE_causal,
-  MSE_standard
-)
+# True ate
+lucky_ate <- mean(d0_lucky$y1 - d0_lucky$y0)
 
-ggplot(data = errors) +
-  geom_boxplot(aes(x = 'Standard Match', MSE_standard)) +
-  geom_boxplot(aes(x= 'Causal Match', MSE_causal)) +
-  xlab('') + 
-  ylab('Prediction error') +
-  ggsave('images/appendix_simulation_matching_standard_error.png')
+# Save this d0 as the lucky case
+saveRDS(d0_lucky, 'data/d0_lucky.Rds')
+# Save this d1 as the comparision case
+saveRDS(d1, 'data/d1.Rds')
+
+
+### Create the unlucky case
+d0_reordered <- d0[order(d0$x1), ]
+d0_reordered[1:floor(nrow(d0_reordered) / 2), 't'] <- 1
+d0_reordered[-(1:floor(nrow(d0_reordered) / 2)), 't'] <- 0
+d0_unlucky <- d0_reordered
+
+# To see how unlucky
+ggplot(data = d0_unlucky, aes(x1, fill = factor(t))) + geom_density(alpha = .2) 
+
+
+# Save the unlucky case
+saveRDS(d0_unlucky, 'data/d0_unlucky.Rds')
+
+# see that the true ate did not change
+unlucky_ate <- mean(d0_unlucky$y1 - d0_unlucky$y0)
+
+unlucky_ate ==lucky_ate
+
+# hence
+true_ate <- unlucky_ate
+
+rm(list = ls())

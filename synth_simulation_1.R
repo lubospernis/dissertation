@@ -143,7 +143,7 @@ replicateForests <- function(initial, target, formula) {
                      sample.size.total = floor(nrow(initial) / 2), sample.size.train.frac = .5,
                      mtry = ceiling(ncol(initial)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1) 
   
-  predictioncf <- predict.causalForest(cf, target)
+  predictioncf <- predict(cf, target)
   
   # Ate true
   targetATE <- mean(target$y1) - mean(target$y0)

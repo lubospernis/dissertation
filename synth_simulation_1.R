@@ -1,6 +1,7 @@
 # Load libraries
 library(magrittr)
 library(causalTree)
+source('functions/causalMatchFNN.R')
 #### START ####
 
 ## Define treatment - it will take linear form
@@ -107,7 +108,7 @@ mean(d1$y1) - mean(d1$y0)
 
 
 ##### Apply the methods #####
-source('causalMatchFNNdfReo.R')
+
 
 MSEs_initial <- numeric()
 MSEs <- numeric()
@@ -115,7 +116,7 @@ for(i in 1:100){
   # For each re-assign treatment
   d0 <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
-  match_out_ate<- causalMatch(d1, d0, 'x1')
+  match_out_ate<- causalMatchFNN(d1, d0, 'x1')
   true_ate <- mean(d1$y1)-mean(d1$y0)
   initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
   MSEs[i] <- (match_out_ate - true_ate)^2
@@ -126,9 +127,13 @@ for(i in 1:100){
   
 }
 
-png('images/simulation_1_error_matching.png')
+png('images/simulation_1_error_matching_compared.png')
 hist(MSEs, breaks = 20, main = 'causal Match', sub = round(mean(MSEs), 2),xlab = 'Pred. Error', xlim = c(0, 200))
 hist(MSEs_initial, breaks = 20, col = 'red', add = T)
+dev.off()
+
+png('images/simulation_1_error_matching.png')
+hist(MSEs, breaks = 20, main = 'causal Match', sub = round(mean(MSEs), 2),xlab = 'Pred. Error')
 dev.off()
 
 ## Causal Forest
@@ -149,21 +154,24 @@ replicateForests <- function(initial, target, formula) {
   targetATE <- mean(target$y1) - mean(target$y0)
   
   #
-  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+  initial_ate <- mean(initial$y[initial$t == 1]) - mean(initial$y[initial$t == 0])
   
   # pred error
   predE <- (mean(predictioncf) - targetATE) ^2
   # trueE 
-  trueE <- (InTa - targetATE)^2
+  trueE <- (initial_ate - targetATE)^2
   
   return(c(predE, trueE))
   
 }
 
 forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
-png('images/simulation_1_error_forest.png')
+png('images/simulation_1_error_forest_compared.png')
 hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
 dev.off()
 
-                      
+forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
+png('images/simulation_1_error_forest.png')
+hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error')
+dev.off()

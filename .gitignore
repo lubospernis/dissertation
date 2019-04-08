@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+default.latex
+.DS_Store

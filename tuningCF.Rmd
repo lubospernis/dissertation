@@ -1,0 +1,14 @@
+---
+title: "Tuning the Forest"
+author: "Ľuboš Perniš"
+date: "08/04/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Operationalisation of causal Forest
+
+## Forests and Bagging

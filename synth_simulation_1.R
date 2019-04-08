@@ -1,7 +1,6 @@
 # Load libraries
 library(magrittr)
 library(causalTree)
-library(devtools)
 #### START ####
 
 ## Define treatment - it will take linear form
@@ -108,28 +107,19 @@ mean(d1$y1) - mean(d1$y0)
 
 
 ##### Apply the methods #####
-source('causalMatchFNNdf.R')
+source('causalMatchFNNdfReo.R')
 
 MSEs_initial <- numeric()
 MSEs <- numeric()
 for(i in 1:100){
   # For each re-assign treatment
-  d0_reassigned <- reassign_treatment(d0)
+  d0 <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
-  mse <- numeric()
-  mse_initial_target <- numeric()
-  for (j in 1:100){
-    m<- causalMatchFNNdf(d1, d0_reassigned, 'x1')
-    match_out_ate <- mean(m$y[m$t==1]) - mean(m$y[m$t==0])
-    
-    true_ate <- mean(d1$y1)-mean(d1$y0)
-    initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
-    mse[j] <- (match_out_ate - true_ate)^2
-    mse_initial_target[j] <- (true_ate - initial_ate)^2
-  }
-  # Assign the mse to MSEs vector
-  MSEs[i] <- mean(mse)
-  MSEs_initial[i] <- mean(mse_initial_target)
+  match_out_ate<- causalMatch(d1, d0, 'x1')
+  true_ate <- mean(d1$y1)-mean(d1$y0)
+  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+  MSEs[i] <- (match_out_ate - true_ate)^2
+  MSEs_initial[i] <- (true_ate - initial_ate) ^2
   
   #
   print(paste0('Iteration: ', i))
@@ -137,10 +127,12 @@ for(i in 1:100){
 }
 
 png('images/simulation_1_error_matching.png')
-hist(MSEs)
+hist(MSEs, breaks = 20, main = 'causal Match', sub = round(mean(MSEs), 2),xlab = 'Pred. Error', xlim = c(0, 200))
+hist(MSEs_initial, breaks = 20, col = 'red', add = T)
 dev.off()
 
 ## Causal Forest
+
 replicateForests <- function(initial, target, formula) {
   initial <- reassign_treatment(initial)
   
@@ -151,13 +143,13 @@ replicateForests <- function(initial, target, formula) {
                      sample.size.total = floor(nrow(initial) / 2), sample.size.train.frac = .5,
                      mtry = ceiling(ncol(initial)/3), nodesize = 3, num.trees= 5,ncolx=1,ncov_sample=1) 
   
-  predictioncf <- predict(cf, target)
+  predictioncf <- predict.causalForest(cf, target)
   
   # Ate true
   targetATE <- mean(target$y1) - mean(target$y0)
   
   #
-  InTa <- mean(initial$y[initial$t==1]) - mean(initial$y[initial$t==0])
+  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
   
   # pred error
   predE <- (mean(predictioncf) - targetATE) ^2
@@ -174,5 +166,4 @@ hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Err
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
 dev.off()
 
-mean(forestError)
                       

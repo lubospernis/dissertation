@@ -31,7 +31,7 @@ d0 <- as.data.frame(cbind(x1, y0, y1))
 # Create covariate x1 
 set.seed(1234) # For reproducibility
 uniform <- runif(n = 400, min = 0, max = 10)
-set.seed(123)
+set.seed(1234)
 normal <- rnorm(n = 100, mean = 2)
 x1 <- c(uniform, normal)
 x1 <- x1[x1 <= 10 & x1 >= 0]
@@ -65,7 +65,8 @@ rm(random, treat_rows)
 # Create a helper function which adds a random covariate
 add_rand <- function(df, name, seed = NULL){
   set.seed(seed)
-  rand <- runif(n = nrow(df), min = 0, max = 100)
+  #rand <- runif(n = nrow(df), min = 0, max = 10)s
+  rand <- runif(n = nrow(df), min = 1, max = 10)
   df[, name] <- rand
   return(df)
 }
@@ -140,8 +141,8 @@ dev.off()
 d0 <- d0[, 1:5]
 d1 <- d1[, 1:3]
 
-# Situation 2; p = 20
-covariates <- paste0('x', 2:20)
+# Situation 2; p = 80
+covariates <- paste0('x', 2:80)
 true_ate <- mean(d1$y1) - mean(d1$y0)
 initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
 # Create an empty vector to capture MSE from Matching

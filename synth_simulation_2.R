@@ -286,7 +286,7 @@ loop_random_variables <- function() {
 
 
 # Now add new lines
-for (i in 2:6) {
+for (i in 2:100) {
   additional_lines <- loop_random_variables()
   MSE_matching_repeated <- rbind(MSE_matching_repeated, 
                                  data.frame(

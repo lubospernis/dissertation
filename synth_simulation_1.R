@@ -4,8 +4,6 @@ library(causalTree)
 source('functions/causalMatchFNN.R')
 #### START ####
 
-## Define treatment - it will take linear form
-
 # This helper function generates y1
 generate_y1 <- function(treatment_function) {
   return(y0 + eval(parse(text  = treatment_function)))
@@ -43,7 +41,7 @@ d0 <- as.data.frame(cbind(x1, y0, y1))
 
 ## Create the synth dataset for D = 1 
 # Create covariate x1 
-set.seed(123) # For reproducibility
+set.seed(1234) # For reproducibility
 uniform <- runif(n = 400, min = 0, max = 10)
 set.seed(123)
 normal <- rnorm(n = 100, mean = 2)
@@ -81,15 +79,18 @@ rm(random, treat_rows)
 cor(d0[, c('t', 'x1', 'y0', 'y1')])
 
 # Ass2: 
+ass2 <- rbind(d0[, 1:3], d1[, 1:3])
+ass2$d <- c(rep(497, 0), rep(499, 1))
+summary(lm(data = ass2, y1 ~ d + x1))
+
+# Perfect fit - x1 explains all the variance
+rm(ass2)
+
 
 # Ass3: Overlap
 # -> by definition
 
 ## Compute ATEs
-
-# ATE d0
-mean(d0$y1) - mean(d0$y0)
-mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
 
 # Show that we can get to the true ATE
 ate_true <- numeric()
@@ -98,42 +99,75 @@ for (i in 1:1000){
   ate_true[i] <- mean(d0_shuffle$y[d0_shuffle$t == 1]) -mean(d0_shuffle$y[d0_shuffle$t == 0]) 
 }
 png('images/simulation_1_ate_true.png')
-hist(ate_true)
+hist(ate_true, main = 'ATE from repeated treatment assignment', 
+     xlab = '', 
+     sub = 'The red vertical line designates the true ATE')
+abline(v = mean(d0$y1) - mean(d0$y0), col = 'red')
 dev.off()
 
 rm(ate_true, d0_shuffle)
 
-# ATE d1
+# Show that the density distributions of the covariate is different 
+red <- scales::alpha('red', 0.5)
+png('images/simulation_1_d0_d1.png')
+plot(density(d0$x1), xlim = c(0,10), ylim = c(0, 0.15), main = '', xlab = 'x1')
+polygon(density(d0$x1), col = red, border = 'white')
+polygon(density(d1$x1), col = alpha('blue', 0.3), border = 'white')
+legend("topright", legend = c('d1', 'd0'), 
+       fill = c(alpha('blue', 0.3), red))
+dev.off()
+rm(red)
+
+# Show as a consequence that d0 ate and d1 ate is different 
 mean(d1$y1) - mean(d1$y0)
+mean(d0$y1) - mean(d0$y0)
 
 
+# After adjustment 
+m <- causalMatchFNNdf_run_once(d1, d0, 'x1', 123)
+
+red <- scales::alpha('red', 0.3)
+png('images/simulation_1_d0_d1_adjusted.png')
+plot(density(m$x1), xlim = c(0,10), ylim = c(0, 0.15), main = '', xlab = 'x1')
+polygon(density(m$x1), col = red, border = 'white')
+polygon(density(d1$x1), col = alpha('blue', 0.3), border = 'white')
+legend("topright", legend = c('d1', 'matched d1'), 
+       fill = c(alpha('blue', 0.3), red))
+dev.off()
+rm(red)
+
+causalMatchFNN(d1, d0, 'x1', 123)
 ##### Apply the methods #####
 
-
-MSEs_initial <- numeric()
-MSEs <- numeric()
+NPE <- numeric()
+SE <- numeric()
+tauPRED <- numeric()
 for(i in 1:100){
   # For each re-assign treatment
   d0 <- reassign_treatment(d0)
   # Compute the mean squared error of the predictions for Causal Match with reassignment
   match_out_ate<- causalMatchFNN(d1, d0, 'x1')
   true_ate <- mean(d1$y1)-mean(d1$y0)
-  initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
-  MSEs[i] <- (match_out_ate - true_ate)^2
-  MSEs_initial[i] <- (true_ate - initial_ate) ^2
+  ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+  SE[i] <- (match_out_ate - true_ate)^2
+  NPE[i] <- (true_ate - ate) ^2
+  tauPRED[i] <- match_out_ate
   
   #
   print(paste0('Iteration: ', i))
   
 }
 
-png('images/simulation_1_error_matching_compared.png')
-hist(MSEs, breaks = 20, main = 'causal Match', sub = round(mean(MSEs), 2),xlab = 'Pred. Error', xlim = c(0, 200))
-hist(MSEs_initial, breaks = 20, col = 'red', add = T)
+png('images/simulation_1_error_matching_compared.png', pointsize = 16)
+hist(SE, breaks = 20, main = 'causal Match',xlab = 'Error', xlim = c(0, 200))
+hist(NPE, breaks = 20, col = 'red', add = T)
+legend("topright", legend = c('SE', 'NPE'), 
+       fill = c(1, 2),
+       col = c('black', 'red'))
 dev.off()
 
-png('images/simulation_1_error_matching.png')
-hist(MSEs, breaks = 20, main = 'causal Match', sub = round(mean(MSEs), 2),xlab = 'Pred. Error')
+png('images/simulation_1_error_matching.png', pointsize = 16)
+hist(SE, breaks = 20, main = 'causal Match', sub = round(mean(SE), 2),xlab = 'Error')
 dev.off()
 
 ## Causal Forest
@@ -161,17 +195,22 @@ replicateForests <- function(initial, target, formula) {
   # trueE 
   trueE <- (initial_ate - targetATE)^2
   
-  return(c(predE, trueE))
+  return(c(predE, trueE, mean(predictioncf)))
   
 }
 
 forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
-png('images/simulation_1_error_forest_compared.png')
-hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error', xlim = c(0, 200))
+png('images/simulation_1_error_forest_compared.png', pointsize = 16)
+hist(t(forestError)[, 1], breaks = 20, 
+     main = 'causal Forest', xlab = 'Error', xlim = c(0, 200) 
+     )
 hist(t(forestError)[, 2], breaks = 20, col = 'red', add = T)
+legend("topright", legend = c('SE', 'NPE'), 
+       fill = c(1, 2),
+       col = c('black', 'red'))
 dev.off()
 
-forestError <- replicate(100, replicateForests(d0, d1, y ~ x1))
-png('images/simulation_1_error_forest.png')
-hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Pred. Error')
+png('images/simulation_1_error_forest.png', pointsize = 16)
+hist(t(forestError)[, 1], breaks = 20, main = 'causal Forest', xlab = 'Error', 
+     sub = round(mean(t(forestError)[, 1]), 2))
 dev.off()

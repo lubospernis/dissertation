@@ -29,7 +29,7 @@ d0 <- as.data.frame(cbind(x1, y0, y1))
 
 ## Create the synth dataset for D = 1 
 # Create covariate x1 
-set.seed(123) # For reproducibility
+set.seed(1234) # For reproducibility
 uniform <- runif(n = 400, min = 0, max = 10)
 set.seed(123)
 normal <- rnorm(n = 100, mean = 2)
@@ -65,7 +65,7 @@ rm(random, treat_rows)
 # Create a helper function which adds a random covariate
 add_rand <- function(df, name, seed = NULL){
   set.seed(seed)
-  rand <- rnorm(n = nrow(df), mean = 10, sd = 10)
+  rand <- runif(n = nrow(df), min = 0, max = 100)
   df[, name] <- rand
   return(df)
 }

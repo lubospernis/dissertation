@@ -1,5 +1,5 @@
 # The aim of this simulation is to show that knn breaks down as the num of covariates increases
-# p = 6, p = 20
+# p = 6, p = 20; p = 80
 source('functions/causalMatchFNN.R')
 library(causalTree)
 

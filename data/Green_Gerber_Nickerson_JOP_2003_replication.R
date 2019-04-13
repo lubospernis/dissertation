@@ -1,10 +1,10 @@
-setwd("F:/GreenGerberNickerson_JP_2003/")
+setwd("dataF:/GreenGerberNickerson_JP_2003/")
 
 library(Zelig) #this loads a package to do the biprobit analyses
 # related vignette, if interested: http://cran.r-project.org/web/packages/Zelig/vignettes/bprobit.pdf
 
 # Re-exported Stata .dta as .csv since the current .csv doesn't seem to match up (maybe sorted?)
-data <- read.csv("GreenGerberNickerson_JP_2003_1.csv")
+data <- read.csv("data/GreenGerberNickerson_JP_2003.csv")
 
 # Sorting turf in proper alphabetical order.
 data$turf = as.character(data$turf)

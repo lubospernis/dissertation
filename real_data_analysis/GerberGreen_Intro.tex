@@ -1,0 +1,539 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Gerber and Green Experiment},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Gerber and Green Experiment}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{}
+    \preauthor{}\postauthor{}
+    \date{}
+    \predate{}\postdate{}
+  
+
+\begin{document}
+\maketitle
+
+\section{Gerber and Green 2003}\label{gerber-and-green-2003}
+
+\subsection{Exploratory data analysis}\label{exploratory-data-analysis}
+
+In this experiment there is total number of 18 933 individuals from 6
+different cities in the United States.
+
+\subsubsection{The dependent and independent
+variables}\label{the-dependent-and-independent-variables}
+
+The dependent variable is whether the person voted in the 6 November
+election in 2001. There are six independent variables; race, sex, age,
+party affiliation, turnout in the 2000 election and turnout in the 1999
+election. The treatment indicator variable
+
+\subsubsection{Weird values}\label{weird-values}
+
+\begin{verbatim}
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+##   18.00   31.00   42.00   45.25   56.00 2001.00    2487
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{verbatim}
+##              city              precinct   zip race party sex  age turf
+## 13846 MINNEAPOLIS MINNEAPOLIS W- 6 P- 8 55407                2001  103
+##       voted01 voted00 voted99 family famsize represen reached other goaway
+## 13846       1       0       0   4506       1        1       0     0      0
+##       nothome bad cant nothing contact treatmen primary
+## 13846       0   0    0       0       0        0       0
+\end{verbatim}
+
+\subsubsection{Missing data}\label{missing-data}
+
+There is missing data in the experimental files - we need to recode them
+to the NA format to further inspect them.
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{verbatim}
+## [1] "Raleigh"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-1.pdf}
+
+\begin{verbatim}
+## [1] "Bridgeport"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-2.pdf}
+
+\begin{verbatim}
+## [1] "DETROIT"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-3.pdf}
+
+\begin{verbatim}
+## [1] "COLUMBUS"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-4.pdf}
+
+\begin{verbatim}
+## [1] "MINNEAPOLIS"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-5.pdf}
+
+\begin{verbatim}
+## [1] "ST PAUL"
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/missing values per city-6.pdf}
+
+From these plots we conclude that Columbus is not useful at all.
+
+St Paul and Minneapolis only useful together. I will try this.
+
+Detroit, Raleigh, Bridgeport.
+
+\subsubsection{The rationale for putting Minneapolis and St Paul
+together}\label{the-rationale-for-putting-minneapolis-and-st-paul-together}
+
+\begin{itemize}
+\item
+  Same state
+\item
+  Same sampling composition
+\item
+  x Variables to be used: age, voted00, voted99
+\end{itemize}
+
+\emph{Dealing with the one weird individual who is 2001 years old}
+
+\subsubsection{Detroit, Raleigh,
+Bridgeport}\label{detroit-raleigh-bridgeport}
+
+\begin{itemize}
+\item
+  Bridgeport seems a bit different; very low turnout. Different
+  composition and so on.
+\item
+  Detroit, Raleigh is a stretch but let's try.
+\end{itemize}
+
+\subsection{Understanding the differences in background covariates in
+Minnesota}\label{understanding-the-differences-in-background-covariates-in-minnesota}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/Density plot age Min-1.pdf}
+
+\begin{verbatim}
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0000  1.0000  1.0000  0.8174  1.0000  1.0000
+\end{verbatim}
+
+\begin{verbatim}
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0000  0.0000  1.0000  0.5389  1.0000  1.0000
+\end{verbatim}
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+\subsubsection{Rescale the variables}\label{rescale-the-variables}
+
+\subsubsection{Making prediction in
+Minnesota}\label{making-prediction-in-minnesota}
+
+First, we prepare the data. Let \(D = 0\) be Minneapolis and \(D = 1\)
+St Paul.
+
+Now we run causal Match just once to see
+
+\includegraphics{GerberGreen_Intro_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+Now we obtain the final predictions:
+
+\begin{verbatim}
+## [1] "Building trees ..."
+## [1] "Tree 1"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 2"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 3"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 4"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 5"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 6"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 7"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 8"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 9"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 10"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 11"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 12"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 13"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 14"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 15"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 16"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 17"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 18"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 19"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 20"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 21"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 22"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 23"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 24"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 25"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 26"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 27"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 28"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 29"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 30"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 31"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 32"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 33"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 34"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 35"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 36"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 37"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 38"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 39"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 40"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 41"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 42"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 43"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 44"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 45"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 46"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 47"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 48"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 49"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 50"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 51"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 52"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 53"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 54"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 55"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 56"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 57"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 58"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 59"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 60"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 61"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 62"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 63"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 64"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 65"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 66"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 67"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 68"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 69"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 70"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 71"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 72"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 73"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 74"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 75"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 76"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 77"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 78"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 79"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 80"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 81"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 82"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 83"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 84"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 85"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 86"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 87"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 88"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 89"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 90"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 91"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 92"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 93"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 94"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 95"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 96"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 97"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 98"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 99"
+## [1] 2
+## [1] "CT"
+## [1] "Tree 100"
+## [1] 2
+## [1] "CT"
+\end{verbatim}
+
+\begin{verbatim}
+## [1] 2201  100
+\end{verbatim}
+
+The \(tau_1^{PRED}\) from causal match is 0.0305319 and from causal
+forest 0.0263373. Their respective errors are 2.008498 and 3.37339. The
+NPE is 6.1686766.
+
+
+\end{document}

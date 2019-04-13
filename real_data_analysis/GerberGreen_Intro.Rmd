@@ -1,33 +1,293 @@
 ---
 title: "Gerber and Green Experiment"
-output: powerpoint_presentation
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(haven)
+library(VIM)
+library(scales)
+library(knitr)
+library(dplyr)
+data <- read.csv("../data/GreenGerberNickerson_JP_2003.csv", stringsAsFactors = F)
+
 ```
 
-## Gerber and Green 2003
+# Gerber and Green 2003
+In this appendix, I first describe the experimental data from the paper. The original sample size for the experiment consists of `r nrow(data)` individuals from 6 different cities in the United States.
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+## Data preparation
 
-## Slide with Bullets
+### The dependent and independent variables
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+The dependent variable is whether the person voted in the 6 November election in 2001. There are six independent variables; race, sex, age, party affiliation, turnout in the 2000 election and turnout in the 1999 election. The treatment indicator variable tells us whether the individual was encouraged to be visited by the canvassers.
 
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+```{r Setup, include=FALSE}
+y <- data$voted01[data$city != 'COLUMBUS']
+x <- data[data$city != 'COLUMBUS', c('race', 'sex', 'age', 'party', 'voted00')]
+d <- data$city[data$city != 'COLUMBUS']
+d <- factor(d, labels =c('Bridgeport', 'Detroit', 'Minneapolis', 'Raleigh', 'St Paul') )
+t <- data$treatmen[data$city != 'COLUMBUS']
+data_analysis <- cbind(y, x, t, d)
+rm(y, x, t, d)
 ```
 
-## Slide with Plot
 
-```{r pressure}
-plot(pressure)
+### Missing data
+
+There is missing data in the experimental data. In R, the missing data was first recoded to the R's standard NA format and the patterns are visualised in the Figure ().
+
+```{r Missing values to NA, include=FALSE}
+data_analysis[data_analysis == ""] <- NA
 ```
 
+
+```{r Aggregate plot for missingness}
+aggr(data_analysis[2:6])
+```
+
+However, what is more of an interest are the missing values are patterns per location. We proceed with complete case analysis for cases where the missingness is ~1% on a covariate for a given location. The table below shows the proportion of missing values for a given covariate for every location. 
+
+```{r Missing values per city, echo=FALSE}
+cities <- unique(as.character(data_analysis$d))
+tab <- data.frame()
+
+for (i in cities) {
+  p <- aggr(data_analysis[data_analysis$d == i, 2:6], plot = F)
+  tab <- tab %>% bind_rows(., as.data.frame(t(p$missings))[-1, ])
+}
+
+
+
+tab <- sapply(tab, as.numeric)
+tab <- as.data.frame(tab)
+rownames(tab) <- cities
+
+vlookup <- numeric()
+  
+for (i in cities) {
+  vlookup <- append(vlookup, length(data_analysis$t[data_analysis$d == i]))
+}
+
+tab$numOfObs <- vlookup
+tab <- apply(tab, 1, function(x) {
+   x/ x['numOfObs']
+})
+
+tab <- t(tab)
+tab <- as.data.frame(tab)
+tab <- tab[, -6]
+tab <- tab * 100
+
+kable(tab, booktabs = T, digits = 2)
+
+rm(p, tab)
+```
+
+```{r Missing data handling, include=FALSE}
+nrow_before <- nrow(data_analysis)
+
+# Bridgeport
+# Get rid of the 2 missing values in Age
+data_analysis <- data_analysis[!(data_analysis$d == 'Bridgeport' & is.na(data_analysis$age)), ]
+
+# Detroit
+# 55 missing values in Detroit
+data_analysis <- data_analysis[!(data_analysis$d == 'Detroit' & is.na(data_analysis$sex)), ]
+
+# ST Paul
+# 7 missing values in Age
+data_analysis <- data_analysis[!(data_analysis$d == 'St Paul' & is.na(data_analysis$age)), ]
+
+# Raleigh
+# 14 Missing values in sex
+data_analysis <- data_analysis[!(data_analysis$d == 'Raleigh' & is.na(data_analysis$sex)), ]
+
+```
+
+In the complete case analysis we dicarded `r nrow_before - nrow(data_analysis)` rows from the dataset. 
+
+### Other data transformations
+As the next step in the data transformation process, we delete one invalid data observation with the value of 2001 for age.
+
+```{r Delete age 2001, include=FALSE}
+data_analysis <- data_analysis[!data_analysis$age == 2001, ]
+```
+
+Additionally, we reclassify subjects who answered with Unknown to their sex to 'NA' and excluded. This simplifies the matching procedure since with only two sexes, the variable can be operationalised as a dummy variable.
+
+## Data exploration
+
+### The varying individual characteristics between locations
+
+#### Age and Voting in the 2000 election
+```{r Table 2 in the paper [Age, Voted00]}
+table2 <- data.frame()
+
+
+for (i in cities) {
+  r <- sapply(data_analysis[data_analysis$d == i, c('age', 'voted00')], function(x) {
+    mean(x)
+  })
+  
+  table2 <- bind_rows(table2, r)
+  
+}
+
+rownames(table2) <- cities
+
+table2 <- t(table2)
+
+kable(table2, digits = 2, booktabs = T)
+
+```
+
+#### Sex
+```{r Sex, echo=FALSE}
+# Raleigh
+r <- table(as.character(data_analysis$sex[data_analysis$d == 'Raleigh'])) / sum(table(as.character(data_analysis$sex[data_analysis$d == 'Raleigh'])))
+
+# Bridgeport 
+b <- table(as.character(data_analysis$sex[data_analysis$d == 'Bridgeport'])) / sum(table(as.character(data_analysis$sex[data_analysis$d == 'Bridgeport'])))
+
+# Detroit
+d <- table(as.character(data_analysis$sex[data_analysis$d == 'Detroit'])) / sum(table(as.character(data_analysis$sex[data_analysis$d == 'Detroit'])))
+
+tab <- bind_rows(r, b, d)
+rownames(tab) <- c('Raleigh', 'Bridgeport', 'Detroit')
+
+kable(tab, digits = 2, booktabs = T)
+```
+
+#### Party affiliation
+```{r Party affiliation, echo=FALSE}
+# Raleigh
+r <- table(as.character(data_analysis$party[data_analysis$d == 'Raleigh']))/ 
+  sum(table(as.character(data_analysis$party[data_analysis$d == 'Raleigh'])))
+# Bridgeport
+b <- table(as.character(data_analysis$party[data_analysis$d == 'Bridgeport'])) / sum(table(as.character(data_analysis$party[data_analysis$d == 'Bridgeport'])))
+
+tab <- bind_rows(r, b)
+tab <- tab[c('D', 'I', 'R')]
+rownames(tab) <- c("Raleigh", "Bridgeport")
+
+kable(tab, digits = 2, booktabs = T)
+```
+
+```{r Export the cleaned data, echo=TRUE}
+saveRDS(data_analysis, file = '../data/gg_clean.Rds')
+```
+
+
+## Analysis
+
+### Rescaling variables 
+
+
+## Case study 1: Minnesota
+
+```{r Density plot age Min}
+library(ggplot2)
+ggplot(data = data_analysis[data_analysis$d == "Minneapolis" | data_analysis$d == "St Paul",], aes(age, fill = d)) + geom_density(alpha = 0.3)
+
+```
+
+```{r}
+summary(minnesota$voted00[minnesota$city == 'ST PAUL'])
+summary(minnesota$voted00[minnesota$city == 'MINNEAPOLIS'])
+
+
+ggplot(data = minnesota, aes(voted00, group = city, fill = city)) + geom_bar()
+```
+
+### Rescale the variables
+```{r}
+minnesota$age <- rescale(
+  minnesota$age, 
+  to = c(0, 1)
+)
+```
+
+
+### Making prediction in Minnesota
+
+First, we prepare the data. Let $D = 0$ be Minneapolis and $D = 1$ St Paul. 
+
+```{r}
+d0 <- minnesota[minnesota$city == 'MINNEAPOLIS', c('age', 'voted00', 'treatmen', 'voted01')]
+colnames(d0) <- c('age', 'voted00', 't', 'y')
+
+d1 <- minnesota[minnesota$city == 'ST PAUL', c('age', 'voted00', 'treatmen', 'voted01')]
+colnames(d1) <- c('age', 'voted00', 't', 'y')
+
+# Roughly the same as in the paper
+tauhat_d1 <- mean(d1$y[d1$t == 1]) - mean(d1$y[d1$t == 0])
+tauhat_d0 <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
+```
+
+Now we run causal Match just once to see
+
+```{r}
+source('../functions/causalMatchFNN_ties.R')
+m <- causalMatchFNNdf_run_once_ties(d1, d0, c('age', 'voted00'))
+
+hist(d0$age, breaks = 10)
+hist(m$age,add= T, col = alpha('red', 0.2), breaks = 10)
+hist(d1$age, add = T, col = alpha('blue',0.4), breaks =10)
+
+```
+
+
+Now we obtain the final predictions:
+```{r tauPRED causalmatch}
+# causal match
+tauPRED_match <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'), seed_ties = 123)
+```
+
+```{r tauPRED causal forest}
+library(causalTree)
+cf <- causalForest(y ~ age + voted00, data=d0, treatment=d0$t, 
+                     split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
+                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                     split.alpha = 0.5, cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 100,ncolx=2,ncov_sample=2) 
+  
+predictioncf <- predict(cf, d1)
+
+tauPRED_forest <- mean(predictioncf)
+```
+
+
+```{r tauPRED causal forest 2, include=FALSE}
+library(causalTree)
+cf2 <- causalForest(y ~ age + voted00, data=d0, treatment=d0$t, 
+                     split.Rule="CT", split.Honest=T, double.Sample = TRUE,  split.Bucket=F, bucketNum = 5,
+                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
+                     split.alpha = 0.5, cv.alpha = 0.5,
+                     sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
+                     mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 100,ncolx=2,ncov_sample=2) 
+  
+predictioncf2 <- predict(cf2, d1)
+
+tauPRED_forest2 <- mean(predictioncf2)
+```
+
+```{r errors}
+SE_match <- (tauPRED_match*100 - tauhat_d1*100) ^2
+SE_forest <- (tauPRED_forest*100 - tauhat_d1*100) ^2
+NPE <- (tauhat_d0*100 - tauhat_d1*100)^2
+```
+
+
+The $tau_1^{PRED}$ from causal match is `r tauPRED_match` and from causal forest `r tauPRED_forest`. Their respective errors are `r SE_match` and `r SE_forest`. The NPE is `r NPE`. 
+
+## Moving to the other three cases
+
+### Bridgeport and Raleigh
+
+Next, we consider predicting the ATE for Raleigh using the data from Bridgeport. The two locations are very different and experienced elections of different intensities. At the same time, individuals from these two locations share the biggest number of common background characteristics which can allow us to make better adjustment between locations. 
+
+We turn to this example as the biggest number of background characteristics was captured for voters in both Bridgeport and Raleigh.

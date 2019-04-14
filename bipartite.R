@@ -1,5 +1,4 @@
 # Visualise matching as a bipartite graph
-
 library(igraph)
 
 m <- causalMatchFNNdf_run_once_ties(d1, d0, c('age', 'voted00'))
@@ -23,6 +22,5 @@ V(g)$color <- ifelse(V(g)$type, "lightblue", "salmon")
 V(g)$shape <- ifelse(V(g)$type, "circle", "square")
 E(g)$color <- "lightgray"
 
-plot(g, vertex.label.cex = 0.8, vertex.label.color = "black")
 
-plot(g, layout=layout.bipartite, vertex.size=7, vertex.label.cex=0.6)
+plot(g, layout=layout.bipartite, vertex.size=7, vertex.label.cex=0)

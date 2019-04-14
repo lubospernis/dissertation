@@ -145,11 +145,11 @@ print(tauPred_forest * 100)
 SE_f <- sapply(names(tauPred_forest),  function(x) {
   SE_function(x, tauPred_forest[x])
 }, USE.NAMES = F)
-tauhat_1 <- sapply(names(tauPred_forest), tauhat_1_function)
-taupred_naive <- sapply(names(tauPred_forest), tauPred_naive_function)
-NPE <- sapply(names(tauPred_forest),  NPE_function)
+tauhat_1_f <- sapply(names(tauPred_forest), tauhat_1_function)
+taupred_naive_f <- sapply(names(tauPred_forest), tauPred_naive_function)
+NPE_f <- sapply(names(tauPred_forest),  NPE_function)
 
-table_analysis1_pred_forest <- bind_rows(tauPred_forest * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
+table_analysis1_pred_forest <- bind_rows(tauPred_forest * 100, tauhat_1_f * 100, SE_f, taupred_naive_f * 100, NPE_f)
 rownames(table_analysis1_pred_forest) <- c(
   '$\\tau_{ITT}^{PRED}$', 
   '$\\hat{\\tau_{ITT}}$', 

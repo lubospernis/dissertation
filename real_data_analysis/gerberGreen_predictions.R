@@ -177,6 +177,14 @@ ggplot(data = df, aes(age, fill = d)) +
 hist(df$voted00[df$d == 'St Paul'], freq = F)
 hist(df$voted00[df$d == 'Minneapolis'], freq = F, add = T, col = alpha('red', 0.3))
 
-### Predictions ###
+# Scale
+df$age <- rescale(
+  df$age, 
+  to = c(0, 1)
+)
 
-tauPred_Minneapolis <- causalMatchFNN_ties(df[df$d == 'Minneapolis', ])
+### Predictions ###
+d1 <- df[df$d == 'St Paul', ]
+d0 <- df[df$d == 'Minneapolis', ]
+
+tauPred_Minneapolis <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))

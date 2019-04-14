@@ -53,6 +53,11 @@ causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed
   MatchedDF <- rbind(matched_y_t, matched_y_c) 
   
   #print('Done. Success. Matched.')
+  attr(MatchedDF, 'indices.list') <- list(
+    target_t = target_t, 
+    initial_t = indices_t
+  )
+  
   return(MatchedDF) 
 }
 

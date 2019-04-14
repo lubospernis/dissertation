@@ -180,11 +180,18 @@ hist(df$voted00[df$d == 'Minneapolis'], freq = F, add = T, col = alpha('red', 0.
 # Scale
 df$age <- rescale(
   df$age, 
-  to = c(0, 1)
+  to = c(0, 10)
 )
 
 ### Predictions ###
+# Let D = 1 be St Paul and D = 0 Minneapolis
 d1 <- df[df$d == 'St Paul', ]
 d0 <- df[df$d == 'Minneapolis', ]
 
 tauPred_Minneapolis <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
+tauPred_Minneapolis * 100# Let D = 1 be Minneapolis and D = 0 St Paul
+d1 <- df[df$d == 'Minneapolis', ]
+d0 <- df[df$d == 'St Paul',]
+
+tauPred_StPaul <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
+tauPred_StPaul*100

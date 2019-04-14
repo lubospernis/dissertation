@@ -9,11 +9,6 @@ source('functions/causalMatchFNN_ties.R')
 # Data
 df_all <- readRDS('data/gg_clean.Rds')
 
-# First start with rescaling age 
-df_all$age <- rescale(
-  df_all$age, 
-  to = c(0, 1)
-)
 
 # Define helper functions
 # SE
@@ -52,17 +47,52 @@ tauPred_naive_function <- function(location) {
 
 ### Causal match for all predictions ###
 # For these predictions we only use age and voted00 as predictors
-tauPred_match <- numeric()
 
-for (i in unique(df_all$d)) {
-  d0 <- df_all[df_all$d != i, ]
-  d1 <- df_all[df_all$d == i, ]
+# First start with rescaling age 
+# df_all$age <- rescale(
+#   df_all$age, 
+#   to = c(0, 1)
+# )
+# 
+# 
+# tauPred_match <- numeric()
+# 
+# for (i in unique(df_all$d)) {
+#   d0 <- df_all[df_all$d != i, ]
+#   d1 <- df_all[df_all$d == i, ]
+#   
+#   tauPred_match <- c(tauPred_match, causalMatchFNN_ties(d1, d0, c('age', 'voted00')))
+#   print(i)
+# }
+# 
+# names(tauPred_match) <- unique(df_all$d)
+
+causal_match_scaled <- function(scale_vector = NULL, scale = TRUE, ageVar) {
+  if (!is.null(scale_vector)) {
+    df_all$age <- rescale(
+      age, 
+      to = scale_vector
+    )
+  } else {
+    df_all$age <- scale(df_all$age, center = F, scale = scale)
+    df_all$voted00 <- scale(df_all$voted00, center = F, scale = scale)
+  }
   
-  tauPred_match <- c(tauPred_match, causalMatchFNN_ties(d1, d0, c('age', 'voted00')))
-  print(i)
-}
 
-names(tauPred_match) <- unique(df_all$d)
+  tauPred_match <- numeric()
+  
+  for (i in unique(df_all$d)) {
+    d0 <- df_all[df_all$d != i, ]
+    d1 <- df_all[df_all$d == i, ]
+    
+    tauPred_match <- c(tauPred_match, causalMatchFNN_ties(d1, d0, c('age', 'voted00')))
+    print(i)
+  }
+  names(tauPred_match) <- unique(df_all$d)
+  
+  return(tauPred_match)
+  
+}
 
 # Create latex table
 print(tauPred_match * 100)
@@ -73,20 +103,18 @@ tauhat_1 <- sapply(names(tauPred_match), tauhat_1_function)
 taupred_naive <- sapply(names(tauPred_match), tauPred_naive_function)
 NPE <- sapply(names(tauPred_match),  NPE_function)
 
-table_analysis1_pred <- bind_rows(tauPred_match * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
-rownames(table_analysis1_pred) <- c(
-  'tauPred', 
-  'tauhat_1', 
+table_analysis1_pred_match <- bind_rows(tauPred_match * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
+rownames(table_analysis1_pred_match) <- c(
+  '$\\tau_{ITT}^{PRED}$', 
+  '$\\hat{\\tau_{ITT}}$', 
   'SE', 
-  'tauPred_naive',
+  '$\\tau_{ITT}^{NAIVE}$',
   'NPE'
 )
-t(table_analysis1_pred)
 
-kable(t(table_analysis1_pred), format = 'latex', booktabs = T, digits = 2) %>% cat(. , file = 'real_data_analysis/table_analysis_1.tex')
+kable(t(table_analysis1_pred_match), format = 'latex', booktabs = T, digits = 2, escape = F) %>% 
+  cat(. , file = 'real_data_analysis/table_analysis_1_match.tex')
 
-# Now compare
-SE - NPE
 
 ### Causal Forest ###
 tauPred_forest <- numeric()
@@ -104,12 +132,34 @@ for (i in unique(df_all$d)) {
   
   predictioncf <- predict(cf, d1)
   
-  tauPRED_forest[i] <- mean(predictioncf)
+  tauPred_forest[i] <- mean(predictioncf)
   
   print(i)
 }
 
 names(tauPred_forest) <- unique(df_all$d)
+
+# Create latex table
+print(tauPred_forest * 100)
+SE_f <- sapply(names(tauPred_forest),  function(x) {
+  SE_function(x, tauPred_forest[x])
+}, USE.NAMES = F)
+tauhat_1 <- sapply(names(tauPred_forest), tauhat_1_function)
+taupred_naive <- sapply(names(tauPred_forest), tauPred_naive_function)
+NPE <- sapply(names(tauPred_forest),  NPE_function)
+
+table_analysis1_pred_forest <- bind_rows(tauPred_forest * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
+rownames(table_analysis1_pred_forest) <- c(
+  '$\\tau_{ITT}^{PRED}$', 
+  '$\\hat{\\tau_{ITT}}$', 
+  'SE', 
+  '$\\tau_{ITT}^{NAIVE}$',
+  'NPE'
+)
+
+kable(t(table_analysis1_pred_forest), format = 'latex', booktabs = T, digits = 2, escape = F) %>% 
+  cat(. , file = 'real_data_analysis/table_analysis_1_forest.tex')
+
 
 #### Minnesota ####
 # Subset data

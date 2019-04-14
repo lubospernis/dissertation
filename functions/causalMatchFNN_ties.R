@@ -6,14 +6,14 @@ causalMatchFNN_ties <- function(target, initial, X, seed = NULL, seed_ties = NUL
   # the return is the mean of the repeated treatment assignments 
   
   target_predictions <- numeric()
-  
   for (i in 1:100) {
     m <- causalMatchFNNdf_run_once_ties(target, initial, X, seed, seed_ties)
     match_out_ate <- mean(m$y[m$t==1]) - mean(m$y[m$t==0])
     target_predictions[i] <- match_out_ate
   }
-  
-  return(mean(target_predictions))
+  mean_target_predictions <- mean(target_predictions)
+  attr(mean_target_predictions, 'all.predictions') <- target_predictions
+  return(mean_target_predictions)
 }
 
 causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed_ties = NULL) {

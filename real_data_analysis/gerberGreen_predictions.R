@@ -38,4 +38,35 @@ for (i in unique(df_all$d)) {
   print(i)
 }
 
+names(tauPred) <- unique(df_all$d)
+tauPred * 100
 
+# SE
+SE_function <- function(location, tauPred) {
+  tauhat_1 <- mean(df_all$y[df_all$d == location & df_all$t == 1]) - mean(df_all$y[df_all$d == location & df_all$t == 0])
+  SE <- (tauPred*100 - tauhat_1*100) ^ 2
+  return(SE)
+}
+
+SE <- sapply(names(tauPred),  function(x) {
+  SE_function(x, tauPred[x])
+}, 
+USE.NAMES = F)
+
+# NPE
+NPE_function <- function(location) {
+  tauhat_1 <- mean(df_all$y[df_all$d == location & df_all$t == 1]) - mean(df_all$y[df_all$d == location & df_all$t == 0])
+  
+  tauPred <- numeric()
+  for (i in unique(df_all$d)[unique(df_all$d) != location]){
+    tauPred[i] <- mean(df_all$y[df_all$d == i & df_all$t == 1]) - mean(df_all$y[df_all$d == i & df_all$t == 0])
+  }
+  
+  NPE <- (mean(tauPred) * 100 - tauhat_1 * 100) ^2
+  return(NPE)
+}
+
+NPE <- sapply(names(tauPred),  NPE_function)
+
+# Now compare
+SE - NPE

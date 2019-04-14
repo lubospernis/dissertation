@@ -50,7 +50,7 @@ tauPred_naive_function <- function(location) {
 causal_match_scaled <- function(scale_vector = NULL, scale = TRUE, ageVar) {
   if (!is.null(scale_vector)) {
     df_all$age <- rescale(
-      age, 
+      ageVar, 
       to = scale_vector
     )
   } else {
@@ -94,7 +94,7 @@ specifications <- list(
 # Create latex tables
 counter <- 1
 for (parameters in specifications) {
-  tauPred_match <- do.call("causal_match_scaled", list = parameters)
+  tauPred_match <- do.call("causal_match_scaled", parameters)
   SE <- sapply(names(tauPred_match),  function(x) {
     SE_function(x, tauPred_match[x])
   }, USE.NAMES = F)

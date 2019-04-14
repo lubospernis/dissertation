@@ -46,26 +46,6 @@ tauPred_naive_function <- function(location) {
 
 
 ### Causal match for all predictions ###
-# For these predictions we only use age and voted00 as predictors
-
-# First start with rescaling age 
-# df_all$age <- rescale(
-#   df_all$age, 
-#   to = c(0, 1)
-# )
-# 
-# 
-# tauPred_match <- numeric()
-# 
-# for (i in unique(df_all$d)) {
-#   d0 <- df_all[df_all$d != i, ]
-#   d1 <- df_all[df_all$d == i, ]
-#   
-#   tauPred_match <- c(tauPred_match, causalMatchFNN_ties(d1, d0, c('age', 'voted00')))
-#   print(i)
-# }
-# 
-# names(tauPred_match) <- unique(df_all$d)
 
 causal_match_scaled <- function(scale_vector = NULL, scale = TRUE, ageVar) {
   if (!is.null(scale_vector)) {
@@ -94,26 +74,47 @@ causal_match_scaled <- function(scale_vector = NULL, scale = TRUE, ageVar) {
   
 }
 
-# Create latex table
-print(tauPred_match * 100)
-SE <- sapply(names(tauPred_match),  function(x) {
-  SE_function(x, tauPred_match[x])
-}, USE.NAMES = F)
-tauhat_1 <- sapply(names(tauPred_match), tauhat_1_function)
-taupred_naive <- sapply(names(tauPred_match), tauPred_naive_function)
-NPE <- sapply(names(tauPred_match),  NPE_function)
 
-table_analysis1_pred_match <- bind_rows(tauPred_match * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
-rownames(table_analysis1_pred_match) <- c(
-  '$\\tau_{ITT}^{PRED}$', 
-  '$\\hat{\\tau_{ITT}}$', 
-  'SE', 
-  '$\\tau_{ITT}^{NAIVE}$',
-  'NPE'
+# Loop the process to obtain results for different scales
+specifications <- list(
+  list(
+    ageVar = df_all$age
+  ), 
+  list(
+    scale_vector = NULL, 
+    scale = FALSE, 
+    ageVar = df_all$age
+  ), 
+  list(
+    scale_vector = c(0, 1), 
+    ageVar = df_all$age
+  )
 )
 
-kable(t(table_analysis1_pred_match), format = 'latex', booktabs = T, digits = 2, escape = F) %>% 
-  cat(. , file = 'real_data_analysis/table_analysis_1_match.tex')
+# Create latex tables
+counter <- 1
+for (parameters in specifications) {
+  tauPred_match <- do.call("causal_match_scaled", list = parameters)
+  SE <- sapply(names(tauPred_match),  function(x) {
+    SE_function(x, tauPred_match[x])
+  }, USE.NAMES = F)
+  tauhat_1 <- sapply(names(tauPred_match), tauhat_1_function)
+  taupred_naive <- sapply(names(tauPred_match), tauPred_naive_function)
+  NPE <- sapply(names(tauPred_match),  NPE_function)
+  
+  table_analysis1_pred_match <- bind_rows(tauPred_match * 100, tauhat_1 * 100, SE, taupred_naive * 100, NPE)
+  rownames(table_analysis1_pred_match) <- c(
+    '$\\tau_{ITT}^{PRED}$', 
+    '$\\hat{\\tau_{ITT}}$', 
+    'SE', 
+    '$\\tau_{ITT}^{NAIVE}$',
+    'NPE'
+  )
+  
+  kable(t(table_analysis1_pred_match), format = 'latex', booktabs = T, digits = 2, escape = F) %>% 
+    cat(. , file = sprintf('real_data_analysis/table_analysis_1_match_%s.tex', counter))
+  counter <- counter + 1
+}
 
 
 ### Causal Forest ###

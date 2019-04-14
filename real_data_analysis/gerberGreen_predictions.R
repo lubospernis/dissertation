@@ -81,8 +81,9 @@ rownames(table_analysis1_pred) <- c(
   'tauPred_naive',
   'NPE'
 )
+t(table_analysis1_pred)
 
-kable(table_analysis1_pred, format = 'latex', booktabs = T, digits = 2) %>% cat(. , file = 'real_data_analysis/table_analysis_1.tex')
+kable(t(table_analysis1_pred), format = 'latex', booktabs = T, digits = 2) %>% cat(. , file = 'real_data_analysis/table_analysis_1.tex')
 
 # Now compare
 SE - NPE

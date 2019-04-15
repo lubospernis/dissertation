@@ -5,6 +5,7 @@ library(knitr)
 library(causalTree)
 library(dplyr)
 source('functions/causalMatchFNN_ties.R')
+source('functions/createBiGraph.R')
 
 # Data
 df_all <- readRDS('data/gg_clean.Rds')
@@ -188,6 +189,9 @@ df$age <- rescale(
 d1 <- df[df$d == 'St Paul', ]
 d0 <- df[df$d == 'Minneapolis', ]
 
+# Visualise matching
+create_bipartite_graph(d1, d0, c('age', 'voted00'), name = 'd1_stpaul_d0_minneapolis')
+
 tauPred_StPaul <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
 
 cf_StPaul <- causalForest(y ~ age + voted00, data=d0, treatment=d0$t, 
@@ -204,6 +208,10 @@ tauPred_StPaul_forest <- mean(predictioncf_StPaul)
 # Let D = 1 be Minneapolis and D = 0 St Paul
 d1 <- df[df$d == 'Minneapolis', ]
 d0 <- df[df$d == 'St Paul',]
+
+# Visualise matching
+create_bipartite_graph(d1, d0, c('age', 'voted00'), name = 'd1_minneapolis_d0_stpaul')
+
 
 tauPred_Minneapolis <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
 

@@ -54,8 +54,10 @@ causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed
   
   #print('Done. Success. Matched.')
   attr(MatchedDF, 'indices.list') <- list(
-    target_t = target_t, 
-    initial_t = indices_t
+    initial_data_t = initialwithY_t,
+    target_data_t = target_t, 
+    index_initial = indices_t,
+    
   )
   
   return(MatchedDF) 

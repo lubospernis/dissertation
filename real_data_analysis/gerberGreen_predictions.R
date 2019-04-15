@@ -246,8 +246,8 @@ taupred_naive_minnesota <- c(
 names(taupred_naive_minnesota) <- c('Minneapolis', 'St. Paul')
 
 NPE_minnesota <- c(
-  (tauhat_1_function('St Paul') - tauhat_1_function('Minneapolis')) ^2, 
-  (tauhat_1_function('Minneapolis') - tauhat_1_function('St Paul'))^2
+  (tauhat_1_function('St Paul')*100 - tauhat_1_function('Minneapolis')*100) ^2, 
+  (tauhat_1_function('Minneapolis')*100 - tauhat_1_function('St Paul')*100)^2
 )
 
 names(NPE_minnesota) <- c('Minneapolis', 'St. Paul')
@@ -292,8 +292,8 @@ taupred_naive_minnesota <- c(
 names(taupred_naive_minnesota) <- c('Minneapolis', 'St. Paul')
 
 NPE_minnesota <- c(
-  (tauhat_1_function('St Paul') - tauhat_1_function('Minneapolis')) ^2, 
-  (tauhat_1_function('Minneapolis') - tauhat_1_function('St Paul'))^2
+  (tauhat_1_function('St Paul')*100 - tauhat_1_function('Minneapolis')*100) ^2, 
+  (tauhat_1_function('Minneapolis')*100 - tauhat_1_function('St Paul')*100)^2
 )
 
 names(NPE_minnesota) <- c('Minneapolis', 'St. Paul')

@@ -189,14 +189,61 @@ d1 <- df[df$d == 'St Paul', ]
 d0 <- df[df$d == 'Minneapolis', ]
 
 tauPred_StPaul <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
-tauPred_StPaul * 100
-tauhat_1_function('St Paul')
-
 # Let D = 1 be Minneapolis and D = 0 St Paul
 d1 <- df[df$d == 'Minneapolis', ]
 d0 <- df[df$d == 'St Paul',]
 
 tauPred_Minneapolis <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'))
-tauPred_Minneapolis*100
 
-tauhat_1_function('Minneapolis')
+
+# Are both of the predictions lower than the tauhat_1 for the location? 
+tauPred_Minneapolis < tauhat_1_function('Minneapolis')
+tauPred_StPaul < tauhat_1_function('St Paul')
+
+# Latex table
+tauPred_minnesota <- c(tauPred_Minneapolis, tauPred_StPaul)
+names(tauPred_minnesota) <- c('Minneapolis', 'St. Paul')
+
+tauhat_1_minnesota <- c(
+  tauhat_1_function('Minneapolis'), 
+  tauhat_1_function('St Paul')
+)
+names(tauhat_1_minnesota) <- c('Minneapolis', 'St. Paul')
+
+SE_minnesota <- c(SE_function('Minneapolis', tauPred_Minneapolis), 
+                  SE_function('St Paul', tauPred_StPaul)
+                  )
+names(SE_minnesota) <- c('Minneapolis', 'St. Paul')
+
+taupred_naive_minnesota <- c(
+  tauhat_1_function('St Paul'), 
+  tauhat_1_function('Minneapolis')
+)
+
+names(taupred_naive_minnesota) <- c('Minneapolis', 'St. Paul')
+
+NPE_minnesota <- c(
+  (tauhat_1_function('St Paul') - tauhat_1_function('Minneapolis')) ^2, 
+  (tauhat_1_function('Minneapolis') - tauhat_1_function('St Paul'))^2
+)
+
+names(NPE_minnesota) <- c('Minneapolis', 'St. Paul')
+
+table_analysis1_pred_minnesota <- bind_rows(tauPred_minnesota * 100,
+                                            tauhat_1_minnesota * 100,
+                                            SE_minnesota,
+                                            taupred_naive_minnesota * 100,
+                                            NPE_minnesota)
+rownames(table_analysis1_pred_minnesota) <- c(
+  '$\\tau_{ITT}^{PRED}$', 
+  '$\\hat{\\tau_{ITT}}$', 
+  'SE', 
+  '$\\tau_{ITT}^{NAIVE}$',
+  'NPE'
+)
+
+kable(t(table_analysis1_pred_minnesota), format = 'latex', booktabs = T, digits = 2, escape = F) %>% 
+  cat(. , file = 'real_data_analysis/table_analysis_1_minnesota.tex')
+
+
+

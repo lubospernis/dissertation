@@ -12,7 +12,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # <- '../../TreatmentHet/'
-source('functions/causalMatchFNN_ties.R')
+source('functions/causalMatchFNN.R')
 source('functions/standardMatch.R')
 d1 <- readRDS(paste0('data/d1.Rds'))
 d0 <- readRDS('data/d0_unlucky.Rds')

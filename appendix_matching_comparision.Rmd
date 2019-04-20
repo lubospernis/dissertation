@@ -11,10 +11,11 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#prefix <- '../../TreatmentHet/'
-source('../../TreatmentHet/functions/causalMatchFNN.R')
-source('../../TreatmentHet/functions/standardMatch.R')
-d1 <- readRDS(paste0(prefix, 'data/d1.Rds'))
+# <- '../../TreatmentHet/'
+source('functions/causalMatchFNN_ties.R')
+source('functions/standardMatch.R')
+d1 <- readRDS(paste0('data/d1.Rds'))
+d0 <- readRDS('data/d0_unlucky.Rds')
 true_ate <- mean(d1$y1) - mean(d1$y0)
 library(ggplot2)
 getwd()
@@ -37,10 +38,23 @@ $$
 The target location consists of 499 individuals with the true treatment effect of `r round(true_ate, 2)` and with the following distribution of covariate $x^1$
 
 ```{r echo=FALSE}
+d0_dis <- d0[, 1:3]
+d1_dis <- d1[, 1:3]
+
+d0_dis$d <- 0 
+d1_dis$d <- 1
+
+locCombined <- rbind(d0_dis, d1_dis)
+
+ggplot(locCombined, aes(x1, fill = factor(d))) + geom_density(alpha = 0.2)  + scale_fill_discrete(name = 'Location') + ggsave('images/app_matching_comp.png')
+```
+
+## Initial location
+
+```{r echo=FALSE}
 ggplot(d1, aes(x1, fill = 'blue')) + geom_density(alpha = 0.2) + 
   scale_fill_discrete(guide = FALSE)
 ```
-
 
 
 ## "Lucky randomisation"
@@ -48,7 +62,7 @@ ggplot(d1, aes(x1, fill = 'blue')) + geom_density(alpha = 0.2) +
 First, consider a situation of a lucky randomisation where the distribution of covariate $x^1$ is similar for both the individuals under treatment and under control in the initial location. 
 
 ```{r echo=FALSE}
-d0_lucky <- readRDS(paste0(prefix, 'data/d0_lucky.Rds'))
+d0_lucky <- readRDS(paste0('data/d0_lucky.Rds'))
 ggplot(d0_lucky, aes(x1, fill = factor(t))) + geom_density(alpha = 0.2) + scale_fill_discrete(name = 'Treatment')
 ```
 
@@ -74,7 +88,7 @@ The error equals `r round(error_lucky, 2)` and `r round(error_lucky_causalMatch,
 Now we simulate a case where half of the individuals with lowest potential outcomes were assigned to treatment condition. In reality this means that there is large imbalance in potential outcomes between individuals assigned to treatment and control conditions.
 
 ```{r include=FALSE}
-d0_unlucky <- readRDS(paste0(prefix, 'data/d0_unlucky.Rds'))
+d0_unlucky <- readRDS(paste0('data/d0_unlucky.Rds'))
 ```
 
 ```{r echo=FALSE}

@@ -14,15 +14,15 @@ data <- read.csv("../data/GreenGerberNickerson_JP_2003.csv", stringsAsFactors = 
 
 ```
 
-# Gerber and Green 2003
+# Gerber and Green (2003)
 In this appendix, I first describe the experimental data from the paper. The original sample size for the experiment consists of `r nrow(data)` individuals from 6 different cities in the United States.
 
 
 ## Data preparation
 
-### The dependent and independent variables
+### Variables
 
-The dependent variable is whether the person voted in the 6 November election in 2001. There are six independent variables; race, sex, age, party affiliation, turnout in the 2000 election and turnout in the 1999 election. The treatment indicator variable tells us whether the individual was encouraged to be visited by the canvassers.
+The dependent variable `voted00`  tells us whether the person voted in the 6 November election in 2001. The treatment indicator `treatmen`  tells us whether the individual was encouraged to be visited by the canvassers. Additionally, the experiment records six background variables about every individual; race, sex, age, party affiliation, turnout in the 2000 election and turnout in the 1999 election.
 
 ```{r Setup, include=FALSE}
 y <- data$voted01[data$city != 'COLUMBUS']
@@ -34,6 +34,8 @@ data_analysis <- cbind(y, x, t, d)
 rm(y, x, t, d)
 ```
 
+
+In our prediction problem using the experimental data, we do not use the 1999 election variable. According to our knowledge, no elections ocurred in all of the concerned cities in 1999.
 
 ### Missing data
 
@@ -48,7 +50,7 @@ data_analysis[data_analysis == ""] <- NA
 aggr(data_analysis[2:6])
 ```
 
-However, what is more of an interest are the missing values are patterns per location. We proceed with complete case analysis for cases where the missingness is ~1% on a covariate for a given location. The table below shows the proportion of missing values for a given covariate for every location. 
+Rather than looking at aggregate patterns of missingness, what is more of an interest for our specific case are the patterns of missing values in each of the locations. We proceed with complete case analysis for cases where the missingness is ~1% on a covariate for a given location. The table below shows the proportion of missing values for a given covariate for every location. 
 
 ```{r Missing values per city, echo=FALSE}
 cities <- unique(as.character(data_analysis$d))
@@ -121,6 +123,7 @@ Additionally, we reclassify subjects who answered with Unknown to their sex to '
 ## Data exploration
 
 ### The varying individual characteristics between locations
+This 
 
 #### Age and Voting in the 2000 election
 ```{r Table 2 in the paper [Age, Voted00]}
@@ -145,7 +148,7 @@ kable(table2, digits = 2, booktabs = T)
 ```
 
 #### Sex
-```{r Sex, echo=FALSE}
+```{r Sex, echo=FALSE, warning=FALSE}
 # Raleigh
 r <- table(as.character(data_analysis$sex[data_analysis$d == 'Raleigh'])) / sum(table(as.character(data_analysis$sex[data_analysis$d == 'Raleigh'])))
 
@@ -162,7 +165,7 @@ kable(tab, digits = 2, booktabs = T)
 ```
 
 #### Party affiliation
-```{r Party affiliation, echo=FALSE}
+```{r Party affiliation, echo=FALSE, warning=FALSE}
 # Raleigh
 r <- table(as.character(data_analysis$party[data_analysis$d == 'Raleigh']))/ 
   sum(table(as.character(data_analysis$party[data_analysis$d == 'Raleigh'])))
@@ -176,118 +179,32 @@ rownames(tab) <- c("Raleigh", "Bridgeport")
 kable(tab, digits = 2, booktabs = T)
 ```
 
-```{r Export the cleaned data, echo=TRUE}
+```{r Export the cleaned data, include=FALSE}
 saveRDS(data_analysis, file = '../data/gg_clean.Rds')
 ```
 
+## Further causalMatch specifications
+In the operationalisation of causalMatch to the experimental data in the dissertation we have rescaled the age variable to be in the range 0 to 1. Here, I provide two other additional options of working with the variable. First, I scale the age variable by dividing it by its root-mean-square defined as $\sqrt{\frac{1}{n}\sum_{t=1}^{n}age_t^2}$. The results can be seen in the table below.
 
-## Analysis
-
-### Rescaling variables 
-
-
-## Case study 1: Minnesota
-
-```{r Density plot age Min}
-library(ggplot2)
-ggplot(data = data_analysis[data_analysis$d == "Minneapolis" | data_analysis$d == "St Paul",], aes(age, fill = d)) + geom_density(alpha = 0.3)
-
-```
-
-```{r}
-summary(minnesota$voted00[minnesota$city == 'ST PAUL'])
-summary(minnesota$voted00[minnesota$city == 'MINNEAPOLIS'])
+|             | $\tau_{ITT}^{PRED}$  | $\hat{\tau_{ITT}}$  | SE     | $\tau_{ITT}^{NAIVE}$  | NPE    |
+| :---------- | -------------------: | -------------------: | -----: | --------------------: | -----: |
+| Bridgeport  | 2\.29                | 3\.84                | 2\.42  | 2\.01                 | 3\.37  |
+| Raleigh     | 2\.76                | -0\.90               | 13\.38 | 3\.19                 | 16\.77 |
+| Detroit     | 1\.56                | 2\.47                | 0\.83  | 2\.35                 | 0\.02  |
+| Minneapolis | 3\.46                | 1\.99                | 2\.18  | 2\.47                 | 0\.23  |
+| St Paul     | 3\.65                | 4\.47                | 0\.67  | 1\.85                 | 6\.87  |
 
 
-ggplot(data = minnesota, aes(voted00, group = city, fill = city)) + geom_bar()
-```
-
-### Rescale the variables
-```{r}
-minnesota$age <- rescale(
-  minnesota$age, 
-  to = c(0, 1)
-)
-```
+Finally, the table below presents the unscaled results. In this case, no transformation was applied to the age variable. 
 
 
-### Making prediction in Minnesota
-
-First, we prepare the data. Let $D = 0$ be Minneapolis and $D = 1$ St Paul. 
-
-```{r}
-d0 <- minnesota[minnesota$city == 'MINNEAPOLIS', c('age', 'voted00', 'treatmen', 'voted01')]
-colnames(d0) <- c('age', 'voted00', 't', 'y')
-
-d1 <- minnesota[minnesota$city == 'ST PAUL', c('age', 'voted00', 'treatmen', 'voted01')]
-colnames(d1) <- c('age', 'voted00', 't', 'y')
-
-# Roughly the same as in the paper
-tauhat_d1 <- mean(d1$y[d1$t == 1]) - mean(d1$y[d1$t == 0])
-tauhat_d0 <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
-```
-
-Now we run causal Match just once to see
-
-```{r}
-source('../functions/causalMatchFNN_ties.R')
-m <- causalMatchFNNdf_run_once_ties(d1, d0, c('age', 'voted00'))
-
-hist(d0$age, breaks = 10)
-hist(m$age,add= T, col = alpha('red', 0.2), breaks = 10)
-hist(d1$age, add = T, col = alpha('blue',0.4), breaks =10)
-
-```
+|             | $\tau_{ITT}^{PRED}$  | $\hat{\tau_{ITT}}$  | SE     | $\tau_{ITT}^{NAIVE}$  | NPE    |
+| :---------- | -------------------: | -------------------: | -----: | --------------------: | -----: |
+| Bridgeport  | 2\.97                | 3\.84                | 0\.77  | 2\.01                 | 3\.37  |
+| Raleigh     | 2\.91                | -0\.90               | 14\.57 | 3\.19                 | 16\.77 |
+| Detroit     | 1\.68                | 2\.47                | 0\.63  | 2\.35                 | 0\.02  |
+| Minneapolis | 3\.45                | 1\.99                | 2\.14  | 2\.47                 | 0\.23  |
+| St Paul     | 3\.63                | 4\.47                | 0\.70  | 1\.85                 | 6\.87  |
 
 
-Now we obtain the final predictions:
-```{r tauPRED causalmatch}
-# causal match
-tauPRED_match <- causalMatchFNN_ties(d1, d0, c('age', 'voted00'), seed_ties = 123)
-```
-
-```{r tauPRED causal forest}
-library(causalTree)
-cf <- causalForest(y ~ age + voted00, data=d0, treatment=d0$t, 
-                     split.Rule="CT", split.Honest=T,  split.Bucket=F, bucketNum = 5,
-                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
-                     split.alpha = 0.5, cv.alpha = 0.5,
-                     sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
-                     mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 100,ncolx=2,ncov_sample=2) 
-  
-predictioncf <- predict(cf, d1)
-
-tauPRED_forest <- mean(predictioncf)
-```
-
-
-```{r tauPRED causal forest 2, include=FALSE}
-library(causalTree)
-cf2 <- causalForest(y ~ age + voted00, data=d0, treatment=d0$t, 
-                     split.Rule="CT", split.Honest=T, double.Sample = TRUE,  split.Bucket=F, bucketNum = 5,
-                     bucketMax = 100, cv.option="CT", cv.Honest=T, minsize = 2L, 
-                     split.alpha = 0.5, cv.alpha = 0.5,
-                     sample.size.total = floor(nrow(d0) / 2), sample.size.train.frac = .5,
-                     mtry = ceiling(ncol(d0)/3), nodesize = 3, num.trees= 100,ncolx=2,ncov_sample=2) 
-  
-predictioncf2 <- predict(cf2, d1)
-
-tauPRED_forest2 <- mean(predictioncf2)
-```
-
-```{r errors}
-SE_match <- (tauPRED_match*100 - tauhat_d1*100) ^2
-SE_forest <- (tauPRED_forest*100 - tauhat_d1*100) ^2
-NPE <- (tauhat_d0*100 - tauhat_d1*100)^2
-```
-
-
-The $tau_1^{PRED}$ from causal match is `r tauPRED_match` and from causal forest `r tauPRED_forest`. Their respective errors are `r SE_match` and `r SE_forest`. The NPE is `r NPE`. 
-
-## Moving to the other three cases
-
-### Bridgeport and Raleigh
-
-Next, we consider predicting the ATE for Raleigh using the data from Bridgeport. The two locations are very different and experienced elections of different intensities. At the same time, individuals from these two locations share the biggest number of common background characteristics which can allow us to make better adjustment between locations. 
-
-We turn to this example as the biggest number of background characteristics was captured for voters in both Bridgeport and Raleigh.
+Compared to the table presented in the main body of the dissertation (see Table ), the different specification of scaling does not alter our conclusion that we can predict the ITT more accurately than using the naive method in four out of six cases. 

@@ -11,7 +11,7 @@ source('functions/createBiGraph.R')
 df_all <- readRDS('data/gg_clean.Rds')
 
 
-# Define helper functions
+### Define helper functions ###
 # SE
 SE_function <- function(location, tauPred) {
   tauhat_1 <- mean(df_all$y[df_all$d == location & df_all$t == 1]) - mean(df_all$y[df_all$d == location & df_all$t == 0])
@@ -92,7 +92,7 @@ specifications <- list(
   )
 )
 
-# Create latex tables
+# Create latex tables for various specifications of causal match
 counter <- 1
 for (parameters in specifications) {
   tauPred_match <- do.call("causal_match_scaled", parameters)

@@ -1,6 +1,8 @@
 # Load libraries
 
 library(ggplot2)
+library(Matching)
+library(MatchIt)
 
 # Load files
 source('functions/causalMatchFNN.R')
@@ -78,4 +80,24 @@ for (j in cases) {
   
   print(paste0('case ', j, ' done.'))
 }
+
+
+# Lucky rand
+
+d0_lucky <- readRDS('data/d0_lucky.Rds')
+ggplot(d0_lucky, aes(x1, fill = factor(t))) + geom_density(alpha = 0.2) + scale_fill_discrete(name = 'Treatment') +
+  ggsave('images/app_matching_lucky.png')
+
+error_lucky <- (Match(d1, d0_lucky, 'x1') - true_ate) ^2 
+error_lucky_causalMatch <- (causalMatchFNN(d1, d0_lucky, 'x1') - true_ate) ^ 2
+
+
+# Unlucky randomisation
+d0_unlucky <- readRDS(paste0('data/d0_unlucky.Rds'))
+ggplot(d0_unlucky, aes(x1, fill = factor(t))) + geom_density(alpha = 0.2) + scale_fill_discrete(name = 'Treatment') + 
+  ggsave('images/app_matching_unlucky.png')
+
+
+error_unlucky_standardMatch <- (Match(d1, d0_unlucky, 'x1') - true_ate) ^2 
+error_unlucky_causalMatch <- (causalMatchFNN(d1, d0_unlucky, 'x1') - true_ate) ^ 2
 

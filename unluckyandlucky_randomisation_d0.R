@@ -1,4 +1,4 @@
-# creates unlucky randomisation
+# creates unlucky and lucky randomisation draws
 
 source('functions/standardMatch.R')
 source('functions/causalMatchFNN.R')

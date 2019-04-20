@@ -1,10 +1,14 @@
 ---
 title: "Gerber and Green Experiment"
-output: pdf_document
+output:
+  pdf_document:
+    keep_tex: TRUE
+    template: default.latex
+    number_sections: TRUE
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 library(haven)
 library(VIM)
 library(scales)

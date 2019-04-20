@@ -19,6 +19,10 @@ causalMatchFNN_ties <- function(target, initial, X, seed = NULL, seed_ties = NUL
 causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed_ties = NULL) {
   library(FNN)
   
+  # Rows ids
+  target$rowid <- 1:nrow(target)
+  initial$rowid <- 1:nrow(initial)
+  
   # Assign treatment to target - if seed is not null, standardize
   set.seed(seed)
   random <- sample(1:nrow(target))
@@ -29,6 +33,7 @@ causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed
   
   # Select only the individuals according to the Tr indicator from Target
   target_t <- target[target$t == 1, X, drop = F]
+  targetwithY_t <- target[target$t == 1, ,drop = F]
   # Select only covariates from the initial location
   initialwithY_t <- initial[initial$t == 1, ,drop = F]
   initial_t <- initial[initial$t == 1, X, drop = F]
@@ -41,10 +46,13 @@ causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed
   
   # Select only the individuals according to the Tr indicator from Control
   target_c <- target[target$t == 0, X, drop = F]
+  targetwithY_c <- target[target$t == 0, ,drop = F]
+  
   # Select only covariates from the initial location
   initialwithY_c <- initial[initial$t == 0, , drop = F]
   initial_c <- initial[initial$t == 0, X, drop = F]
   
+ 
   # second for loop
   indices_c <- return_knn_indices(target_c, initial_c)
   
@@ -54,8 +62,10 @@ causalMatchFNNdf_run_once_ties <- function(target, initial, X, seed = NULL, seed
   
   #print('Done. Success. Matched.')
   attr(MatchedDF, 'indices.list') <- list(
-    target_t = target_t, 
-    initial_t = indices_t
+    initial_data_t = initialwithY_t,
+    target_data_t = target_t, 
+    index_initial = indices_t,
+    target_data = rbind(targetwithY_t, targetwithY_c)
   )
   
   return(MatchedDF) 
@@ -76,6 +86,8 @@ return_knn_indices <- function(target, initial, seed_ties = NULL) {
   
   i <- 2
   while(TRUE){
+    
+ 
     k <- get.knnx(initial, target,k = i)
     k_matched <- defineCond(k)
     

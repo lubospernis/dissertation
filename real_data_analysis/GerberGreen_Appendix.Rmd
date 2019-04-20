@@ -28,7 +28,8 @@ In this appendix, I first describe the experimental data from the paper. The ori
 
 The dependent variable `voted00`  tells us whether the person voted in the 6 November election in 2001. The treatment indicator `treatmen`  tells us whether the individual was encouraged to be visited by the canvassers. Additionally, the experiment records six background variables about every individual; race, sex, age, party affiliation, turnout in the 2000 election and turnout in the 1999 election.
 
-```{r Setup, include=FALSE}
+```{r Createvar, include=FALSE}
+
 y <- data$voted01[data$city != 'COLUMBUS']
 x <- data[data$city != 'COLUMBUS', c('race', 'sex', 'age', 'party', 'voted00')]
 d <- data$city[data$city != 'COLUMBUS']

@@ -11,6 +11,38 @@ source('functions/createBiGraph.R')
 df_all <- readRDS('data/gg_clean.Rds')
 
 
+### Assumptions ###
+# Overlap Assumption Age
+min_rep <- min(df_all$age)
+max_rep <- max(df_all$age)
+locations <- unique(df_all$d)
+overlapMatrix <- matrix(NA, ncol = 5, nrow = max_rep)
+colnames(overlapMatrix) <- locations
+for (i in min_rep:max_rep){
+  for (j in locations) {
+    overlapMatrix[i, j] <- length(df_all$age[df_all$age == i & df_all$d == j])
+  }
+}
+overlapdf_age <- as.data.frame(overlapMatrix)
+overlapdf[rowMeans(overlapdf_age) > 0 & apply(overlapdf_age, 1, min) == 0, ]
+
+
+# Overlap Assumption Voted00
+min_rep <- min(df_all$age)
+max_rep <- max(df_all$age)
+locations <- unique(df_all$d)
+overlapMatrix <- matrix(NA, ncol = 5, nrow = max_rep)
+colnames(overlapMatrix) <- locations
+for (i in min_rep:max_rep){
+  for (j in locations) {
+    overlapMatrix[i, j] <- min(length(df_all$voted00[df_all$voted00 == 0 & df_all$d == j & df_all$age == i]), length(df_all$voted00[df_all$voted00 == 1 & df_all$d == j & df_all$age == i]))
+  }
+}
+overlapdf_voted <- as.data.frame(overlapMatrix)
+overlapdf[rowMeans(overlapdf_voted) > 0 & apply(overlapdf_voted, 1, min) == 0, ]
+
+
+
 ### Define helper functions ###
 # SE
 SE_function <- function(location, tauPred) {

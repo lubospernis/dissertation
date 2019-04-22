@@ -1,0 +1,41 @@
+\documentclass[border=1mm, preview]{standalone}
+\usepackage[active,tightpage]{preview}
+\usepackage{varwidth}
+\usepackage{amssymb, amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e}
+\usepackage{polyglossia}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage[normalem]{ulem}
+\usepackage[utf8]{inputenc}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{xltxtra,xunicode}
+\begin{document}
+\begin{table}[H]
+\centering
+\begin{tabular}{l|r|r|r|r}
+\hline
+\multicolumn{1}{c|}{ } & \multicolumn{1}{c|}{ } & \multicolumn{2}{c|}{SE} & \multicolumn{1}{c}{ } \\
+\cline{3-4}
+  & $\tau_{1}$ & causal forest & causalMatch & NPE\\
+\hline
+Big difference in Z & 65.63 & 147.52 & 217.35 & 0.13\\
+\hline
+Small difference in Z & 49.63 & 19.52 & 1.16 & 244.42\\
+\hline
+\end{tabular}
+\end{table}
+\end{document}

@@ -223,18 +223,22 @@ SE_forest_repeated <- data.frame(
 SE_matching_repeated <- data.frame(
   line = rep(1, 20), 
   p = seq(from = 1, to = 20, by = 1), 
-  SE = MSE_matching[1:20]
+  SE = SE_matching[1:20]
 )
 
 
 # Define the loop as function to simulate the process
 loop_random_variables <- function() {
+  d0 <- d0[, 1:5]
+  d1 <- d1[, 1:3]
+  
+  
   covariates <- paste0('x', 2:20)
   target_true_ate <- mean(d1$y1) - mean(d1$y0)
   initial_ate <- mean(d0$y[d0$t == 1]) - mean(d0$y[d0$t == 0])
-  # Create an empty vector to capture MSE from Matching
+  # Create an empty vector to capture SE from Matching
   SE_matching <- numeric()
-  # Create an empty vector to capture MSE from Forests
+  # Create an empty vector to capture SE from Forests
   SE_forest <- numeric()
   # Matching
   SE_matching <- (causalMatchFNN(d1, d0, 'x1') - target_true_ate) ^ 2

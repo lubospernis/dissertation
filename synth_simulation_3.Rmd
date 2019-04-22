@@ -136,7 +136,7 @@ $$
 
 We start by creating a new variable $z^1$ with values 5 for initial location and 20 for the target location. We do this by replicating the entire data generation process.
 
-```{r}
+```{r data generation with big difference in Z}
 # This helper function generates y1
 generate_y1 <- function(treatment_function) {
   return(y0 + eval(parse(text  = treatment_function)))
@@ -253,6 +253,19 @@ calc_SE(d1, tauPred_m_z)
 # Causal Forest
 calc_SE(d1, tauPredc_z)
 ```
+
+```{r Create first row of the table}
+row1 <- data.frame(
+  tau_1 = mean(d1$y1-d1$y0), 
+  se_forest = calc_SE(d1, tauPredc_z), 
+  se_match = calc_SE(d1, tauPred_m_z), 
+  NPE = calc_NPE(d0, d1)
+)
+
+
+```
+
+
 
 This is way worse than NPE
 
@@ -377,6 +390,16 @@ calc_SE(d1, tauPred_m_z)
 # Causal Forest
 calc_SE(d1, tauPredc_z)
 ```
+
+```{r}
+row2 <- data.frame(
+  tau_1 = mean(d1$y1-d1$y0), 
+  se_forest = calc_SE(d1, tauPredc_z), 
+  se_match = calc_SE(d1, tauPred_m_z), 
+  NPE = calc_NPE(d0, d1)
+)
+```
+
 
 
 ## Explanations

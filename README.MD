@@ -2,7 +2,7 @@
 
 ## How to use
 
-This repository includes the script and the data to reproduce the analysis in my dissertation. The `functions` folder contains the algorithmic implementation of the causalMatch procedure and its description
+This repository includes the script and the data to reproduce the analysis in my dissertation. The `functions` folder contains the two  algorithmic implementation of the causalMatch procedure. `causalMathFNN.R` implements the procedure without breaking ties and `causalMatchFNN_ties.R` with breaking ties. Note, that the latter is considerably slower.
 
 # Data
 The data folder constains the experimenal data from Green and Gerber (2003)

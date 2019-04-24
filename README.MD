@@ -1,6 +1,10 @@
-# Generalising experimental results using treatment heterogeneity - Dissertation project
+# Generalising experimental results to unseen contexts - Dissertation project
 
-## How to use
+# Reproducible code
+
+The analysis from the dissertation can be reproduced from a capsule on Codeocean http://doi.org/10.24433/CO.4034574.v1. 
+
+## How to use this repository
 
 This repository includes the script and the data to reproduce the analysis in my dissertation. The `functions` folder contains the two  algorithmic implementation of the causalMatch procedure. `causalMathFNN.R` implements the procedure without breaking ties and `causalMatchFNN_ties.R` with breaking ties. Note, that the latter is considerably slower.
 

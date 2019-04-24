@@ -2,7 +2,9 @@
 
 # Reproducible code
 
-The analysis from the dissertation can be reproduced from a capsule on Codeocean http://doi.org/10.24433/CO.4034574.v1. 
+The analysis from the dissertation can be reproduced from a capsule on Codeocean http://doi.org/10.24433/CO.4034574.v1. The capsule contains all the figures and tables from the dissertation. 
+
+<script src="https://codeocean.com/widget.js?id=41aac05c-a44e-4f67-9c63-e61b1055c827" async></script>
 
 ## How to use this repository
 
